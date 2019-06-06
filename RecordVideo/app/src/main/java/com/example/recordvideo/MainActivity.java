@@ -4,11 +4,13 @@ import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -26,7 +28,10 @@ public class MainActivity extends AppCompatActivity {
     ShowCamera showCamera;
     Button btnCapture;
     MediaRecorder mediaRecorder;
+    Chronometer chronometer;
     private boolean isRecording = false;
+    private long pauseOffset;
+
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
 
@@ -35,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         frameLayout = findViewById(R.id.frameLayout);
+        chronometer = findViewById(R.id.chronometer);
         camera = Camera.open();
         showCamera = new ShowCamera(this, camera);
         frameLayout.addView(showCamera);
@@ -47,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     Camera.PictureCallback pictureCallback = new Camera.PictureCallback(){
         @Override
         public void onPictureTaken(byte[] data, Camera camera){
@@ -67,14 +72,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
     public void captureImage(View view){
         if (camera != null){
             camera.takePicture(null, null, pictureCallback);
-
         }
     }
-
     public static Uri getOutputMediaFileUri(int type){
         return Uri.fromFile(getOutputMediaFile(type));
     }
@@ -130,13 +132,16 @@ public class MainActivity extends AppCompatActivity {
             camera.lock();
             btnCapture.setText("Capture");
             isRecording = false;
+            stopChronometer(view);
         }
         else{
             if(prepareVideoRecorder()){
                 mediaRecorder.start();
                 btnCapture.setText("Stop");
                 isRecording = true;
-            }else{
+                startChronometer(view);
+            }
+            else{
                 releaseMediaRecorder();
                 Toast.makeText(this, "Media Recorder Didn't Work", Toast.LENGTH_SHORT).show();
             }
@@ -155,5 +160,14 @@ public class MainActivity extends AppCompatActivity {
             camera.release();
             camera = null;
         }
+    }
+    public void startChronometer(View view){
+        chronometer.setBase(SystemClock.elapsedRealtime() - pauseOffset);
+        chronometer.start();
+    }
+    public void stopChronometer(View view){
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        pauseOffset = 0;
+        chronometer.stop();
     }
 }

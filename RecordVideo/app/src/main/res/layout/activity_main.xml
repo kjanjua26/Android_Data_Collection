@@ -8,25 +8,34 @@
 
     <Button
         android:id="@+id/capture"
-        android:layout_width="155dp"
+        android:layout_width="123dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="131dp"
-        android:layout_marginLeft="131dp"
-        android:layout_marginEnd="125dp"
-        android:layout_marginRight="125dp"
-        android:layout_marginBottom="-1dp"
+        android:layout_marginStart="142dp"
+        android:layout_marginLeft="142dp"
+        android:layout_marginEnd="146dp"
+        android:layout_marginRight="146dp"
+        android:layout_marginBottom="1dp"
         android:text="Capture" />
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="683dp"
-        android:layout_alignBottom="@+id/capture"
-        android:layout_marginBottom="47dp"/>
+        android:layout_above="@+id/capture"
+        android:layout_marginBottom="-1dp"/>
+
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="111dp"
+        android:layout_height="46dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="0dp"
+        android:textSize="20sp" />
 
 </RelativeLayout>
