@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 import java.util.List;
 import java.io.IOException;
 
@@ -54,4 +53,5 @@ public class ShowCamera extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
 
     }
+
 }
