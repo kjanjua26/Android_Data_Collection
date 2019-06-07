@@ -1,11 +1,13 @@
 package com.example.withoutarcore;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Environment;
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Sensor gyroscope;
     Sensor barometric;
 
+    private static final String TAG = "MainActivity";
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
 
@@ -112,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public static File getOutputMediaFile(int type){
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "MyCameraApp");
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "MyCameraApp");
         if(!mediaStorageDir.exists()){
             if(!mediaStorageDir.mkdirs()){
                 Log.d("MyCameraApp", "Failed To Create Directory!");
@@ -137,10 +140,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mediaRecorder = new MediaRecorder();
         camera.unlock();
         mediaRecorder.setCamera(camera);
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH)); // setting the profile to highest possible one.
         mediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
         mediaRecorder.setPreviewDisplay(showCamera.holder.getSurface());
         try {
             mediaRecorder.prepare();
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 isRecording = true;
                 startChronometer(view);
                 try {
-                    bufferedWriter.write("Gyroscope,Acceleration,Pressure" + "\n");
+                    bufferedWriter.write("Time,SensorID,Payload" + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -190,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
                 sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-                sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_UI);
+                sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
             }
             else{
                 releaseMediaRecorder();
@@ -229,23 +232,52 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
     @Override
+    @SuppressLint("NewApi")
+    /*
+        Sensor IDs are for identification.
+        For Gyroscope, the sensorID is 1.
+        For Acceleration, the sensorID is 2.
+        For Pressure, the sensorID is 3.
+     */
+    /*
+        Testing the truncation of timeInMillis at the moment.
+     */
     public void onSensorChanged(SensorEvent sensorEvent) {
-        String data = "";
         String sensorName = sensorEvent.sensor.getName();
         sensorName.replaceAll("\\P{Print}","");
-        if(sensorName.contains("Gyroscope")){
+        if(sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE){
+            int sensorID = 1;
             String gyrodata = Float.toString(sensorEvent.values[0]) + ";" + Float.toString(sensorEvent.values[1]) + ";"
                     + Float.toString(sensorEvent.values[2]);
-            data = gyrodata;
-        }else if (sensorName.contains("Acceleration")){
+
+            double timeInMillis = (double) ((System.currentTimeMillis()
+                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000L) / 1e9);
+
+            String toWrite = timeInMillis + "," + sensorID + "," + gyrodata + "\n";
+            writeData(toWrite);
+            Log.d(TAG, "To Write: " + toWrite);
+        }else if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            int sensorID = 2;
             String accData = Float.toString(sensorEvent.values[0]) + ";" + Float.toString(sensorEvent.values[1]) + ";"
                     + Float.toString(sensorEvent.values[2]);
-            data = "," + accData;
-        }if (sensorEvent.sensor.getType() == Sensor.TYPE_PRESSURE){
+
+            double timeInMillis = (double) ((System.currentTimeMillis()
+                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000L) / 1e9);
+
+            String toWrite = Double.toString(timeInMillis) + "," + sensorID + "," + accData + "\n";
+            writeData(toWrite);
+            Log.d(TAG, "To Write: " + toWrite);
+        }else if (sensorEvent.sensor.getType() == Sensor.TYPE_PRESSURE){
+            int sensorID = 3;
             String pressureData = Float.toString(sensorEvent.values[0]);
-            data = "," + pressureData + "\n";
+
+            double timeInMillis = (double) ((System.currentTimeMillis()
+                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000L) / 1e9);
+
+            String toWrite = timeInMillis + "," + sensorID + "," + pressureData + "\n";
+            writeData(toWrite);
+            Log.d(TAG, "To Write: " + toWrite);
         }
-        writeData(data);
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {}
