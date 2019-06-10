@@ -1,3 +1,11 @@
+/*
+    This application does the following tasks.
+
+    1. Collects the video feed.
+    2. Collects data from different sensors such as: gyroscope, acceleration, barometer.
+    3. Dumps the data in a CSV file in format (timestamp, time, val0, val1, ...).
+    4. The video resolution is set to 720p.
+ */
 package com.example.withoutarcore;
 
 import android.annotation.SuppressLint;
@@ -142,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mediaRecorder.setCamera(camera);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH)); // setting the profile to highest possible one.
+        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P)); // setting the quality to 720p.
         mediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
         mediaRecorder.setPreviewDisplay(showCamera.holder.getSurface());
         try {
@@ -250,10 +258,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             String gyrodata = Float.toString(sensorEvent.values[0]) + ";" + Float.toString(sensorEvent.values[1]) + ";"
                     + Float.toString(sensorEvent.values[2]);
 
-            double timeInMillis = (double) ((System.currentTimeMillis()
-                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000L) / 1e9);
+            double timeInMillis = ((System.currentTimeMillis()
+                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1e6) / 1e9);
 
-            String toWrite = timeInMillis + "," + sensorID + "," + gyrodata + "\n";
+            String toWrite = Double.toString(timeInMillis) + "," + sensorID + "," + gyrodata + "\n";
             writeData(toWrite);
             Log.d(TAG, "To Write: " + toWrite);
         }else if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
@@ -261,8 +269,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             String accData = Float.toString(sensorEvent.values[0]) + ";" + Float.toString(sensorEvent.values[1]) + ";"
                     + Float.toString(sensorEvent.values[2]);
 
-            double timeInMillis = (double) ((System.currentTimeMillis()
-                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000L) / 1e9);
+            double timeInMillis = ((System.currentTimeMillis()
+                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1e6) / 1e9);
 
             String toWrite = Double.toString(timeInMillis) + "," + sensorID + "," + accData + "\n";
             writeData(toWrite);
@@ -271,10 +279,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             int sensorID = 3;
             String pressureData = Float.toString(sensorEvent.values[0]);
 
-            double timeInMillis = (double) ((System.currentTimeMillis()
-                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000L) / 1e9);
+            double timeInMillis = ((System.currentTimeMillis()
+                    + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1e6) / 1e9);
 
-            String toWrite = timeInMillis + "," + sensorID + "," + pressureData + "\n";
+            String toWrite = Double.toString(timeInMillis) + "," + sensorID + "," + pressureData + "\n";
             writeData(toWrite);
             Log.d(TAG, "To Write: " + toWrite);
         }
