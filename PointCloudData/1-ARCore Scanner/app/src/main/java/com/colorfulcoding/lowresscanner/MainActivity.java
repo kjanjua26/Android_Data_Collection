@@ -1,5 +1,6 @@
 package com.colorfulcoding.lowresscanner;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -7,6 +8,10 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.CamcorderProfile;
 import android.media.Image;
 import android.os.Environment;
@@ -22,6 +27,7 @@ import com.google.ar.core.PointCloud;
 import com.google.ar.core.exceptions.NotYetAvailableException;
 import com.google.ar.sceneform.ux.ArFragment;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
@@ -35,7 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private final String TAG = "MainActivity";
     private final float MIN_DIST_THRESHOLD = 0.01f; // 1cm
     private ArFragment fragment;
@@ -43,8 +49,14 @@ public class MainActivity extends AppCompatActivity {
     private WorldToScreenTranslator worldToScreenTranslator;
     private VideoRecorder videoRecorder;
     private List<Float[]> positions3D;
+    private double PCtimeStamp;
+    private SensorManager sensorManager;
+    Sensor accelerometer;
+    Sensor gyroscope;
+    Sensor barometric;
 
     FileWriter writer;
+    BufferedWriter bufferedWriter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,16 +71,19 @@ public class MainActivity extends AppCompatActivity {
             dataDir.mkdir();
         }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName = "PCdata_" + timeStamp + ".csv";
-        File fileDir = new File(dataDir.getPath()  + File.separator + fileName);
+        String fileName_pc = "PCdata_" + timeStamp + ".csv";
+        String fileName_sensor = "Sensordata_" + timeStamp + ".csv";
+        File fileDir = new File(dataDir.getPath()  + File.separator + fileName_pc);
+        File sensorFileDir = new File(dataDir.getPath() + File.separator + fileName_sensor);
         try{
             writer = new FileWriter(fileDir);
+            bufferedWriter = new BufferedWriter(new FileWriter(sensorFileDir));
         }catch (IOException e){
             e.printStackTrace();
         }
 
         fragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.sceneform_fragment);
-        findViewById(R.id.test_but).setOnClickListener(this::testingMethod);
+        findViewById(R.id.test_but).setOnClickListener(this::caller);
         findViewById(R.id.save_but).setOnClickListener(this::saveData);
         videoRecorder.setSceneView(fragment.getArSceneView());
         int orientation = getResources().getConfiguration().orientation;
@@ -80,7 +95,21 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean scanning = false;
     private boolean recording = false;
-    private void testingMethod(View v){
+
+    private void caller(View v){
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE); /* Got the permission to use the sensor. */
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        barometric = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+
+        sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
+        try {
+            bufferedWriter.write("Time,SensorID,val0,val1,val2" + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         recording = videoRecorder.onToggleRecord();
         if(scanning){
             scanning = false;
@@ -103,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
             if(!scanning) return;
 
             PointCloud pc = fragment.getArSceneView().getArFrame().acquirePointCloud();
+            PCtimeStamp = pc.getTimestamp()/1e+9;
             pcNode.update(pc);
 
             try {
@@ -192,6 +222,11 @@ public class MainActivity extends AppCompatActivity {
         fragment.getArSceneView().setupSession(null);
         createCSVFromFeaturePoints(v);
         videoRecorder.onToggleRecord();
+        try {
+            bufferedWriter.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
     private void createCSVFromFeaturePoints(View v){
         String dataPoints = "";
@@ -204,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void saveCSVToFile(String data){
         try {
+            writer.append(Double.toString(PCtimeStamp) + ",");
             writer.append(data + "\n");
             writer.flush();
             writer.close();
@@ -211,4 +247,57 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+    public void writeData(String data){
+        try{
+            bufferedWriter.write(data);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        String sensorName = sensorEvent.sensor.getName();
+        sensorName.replaceAll("\\P{Print}","");
+        if(sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE){
+            int sensorID = 4;
+            String gyrodata = Float.toString(sensorEvent.values[0]) + "," + Float.toString(sensorEvent.values[1]) + ","
+                    + Float.toString(sensorEvent.values[2]);
+
+            //double timeInMillis = ((System.currentTimeMillis()
+            //        + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1e6) / 1e9);
+
+            double sensorTime = sensorEvent.timestamp/1e+9;
+
+            String toWrite = Double.toString(sensorTime) + "," + sensorID + "," + gyrodata + "\n";
+            writeData(toWrite);
+            Log.d(TAG, "To Write: " + toWrite + " Test Time: " + sensorTime);
+        }else if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            int sensorID = 3;
+            String accData = Float.toString(sensorEvent.values[0]) + "," + Float.toString(sensorEvent.values[1]) + ","
+                    + Float.toString(sensorEvent.values[2]);
+
+            //double timeInMillis = ((System.currentTimeMillis()
+            //       + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1e6) / 1e9);
+            double sensorTime = sensorEvent.timestamp/1e+9;
+
+            String toWrite = Double.toString(sensorTime) + "," + sensorID + "," + accData + "\n";
+            writeData(toWrite);
+            Log.d(TAG, "To Write: " + toWrite + " Test Time: " + sensorTime);
+        }else if (sensorEvent.sensor.getType() == Sensor.TYPE_PRESSURE){
+            int sensorID = 6;
+            String pressureData = Float.toString(sensorEvent.values[0]);
+
+            //double timeInMillis = ((System.currentTimeMillis()
+            //       + (sensorEvent.timestamp - SystemClock.elapsedRealtimeNanos()) / 1e6) / 1e9);
+            double sensorTime = sensorEvent.timestamp/1e+9; // using the time in nanosecond at which this happened.
+
+            String toWrite = Double.toString(sensorTime) + "," + sensorID + "," + pressureData + "\n";
+            writeData(toWrite);
+            Log.d(TAG, "To Write: " + toWrite + " Test Time: " + sensorTime);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {}
 }
