@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView debugText;
     private WorldToScreenTranslator worldToScreenTranslator;
     private VideoRecorder videoRecorder;
-    private List<Float[]> positions3D;
+    private List<Float[]> cloudPoints;
+    private List<Integer[]> colorPoints;
     private double PCtimeStamp;
     private SensorManager sensorManager;
     Sensor accelerometer;
@@ -90,7 +91,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_720P, orientation);
         debugText = findViewById(R.id.text_debug);
         worldToScreenTranslator = new WorldToScreenTranslator();
-        positions3D = new ArrayList<>();
+        cloudPoints = new ArrayList<>();
+        colorPoints = new ArrayList<>();
     }
 
     private boolean scanning = false;
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 for(int i=0; i< points.limit(); i+=4) {
                     float[] w = new float[]{points.get(i), points.get(i + 1), points.get(i + 2)};
-                    Optional<Float> minDist = positions3D.stream()
+                    Optional<Float> minDist = cloudPoints.stream()
                             .map(vec -> this.squaredDistance(vec, w))
                             .min((d1, d2) -> d1 - d2 < 0? -1:1);
                     if (minDist.orElse(1000f) < MIN_DIST_THRESHOLD * MIN_DIST_THRESHOLD){
@@ -151,9 +153,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     int[] color = getScreenPixel(w);
                     if(color == null || color.length != 3)
                         continue;
-                    positions3D.add(new Float[]{points.get(i), points.get(i + 1), points.get(i + 2)});
-                    debugText.setText("" + positions3D.size() + " points scanned.");
-
+                    cloudPoints.add(new Float[]{points.get(i), points.get(i + 1), points.get(i + 2)});
+                    debugText.setText("" + cloudPoints.size() + " points scanned.");
+                    colorPoints.add(new Integer[]{color[0], color[1], color[2]});
                     return;
                 }
                 pc.release();
@@ -230,8 +232,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     private void createCSVFromFeaturePoints(View v){
         String dataPoints = "";
-        for (int i = 0; i < positions3D.size(); i++) {
-            dataPoints += Arrays.toString(positions3D.get(i)) + ",";
+        //String colorDataPoints = "";
+        for (int i = 0; i < cloudPoints.size(); i++) {
+            dataPoints += Arrays.toString(cloudPoints.get(i)) + "," + Arrays.toString(colorPoints.get(i)) + ",";
+            //colorDataPoints += Arrays.toString(colorPoints.get(i)) + ",";
+
             dataPoints += "\n";
         }
         saveCSVToFile(dataPoints);
