@@ -7,6 +7,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
+import android.media.CamcorderProfile;
 import android.media.Image;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -35,13 +36,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity {
-
-    private final String TAG = "LOW_RES_SCANNER";
+    private final String TAG = "MainActivity";
     private final float MIN_DIST_THRESHOLD = 0.01f; // 1cm
     private ArFragment fragment;
     private TextView debugText;
     private WorldToScreenTranslator worldToScreenTranslator;
-
+    private VideoRecorder videoRecorder;
     private List<Float[]> positions3D;
 
     FileWriter writer;
@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         /*
             Data Writing.
          */
+        videoRecorder = new VideoRecorder();
         File dataDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PointCloudData");
         if(!dataDir.exists()){
             dataDir.mkdir();
@@ -68,16 +69,22 @@ public class MainActivity extends AppCompatActivity {
 
         fragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.sceneform_fragment);
         findViewById(R.id.test_but).setOnClickListener(this::testingMethod);
-        findViewById(R.id.save_but).setOnClickListener(this::createCSVFromFeaturePoints);
+        findViewById(R.id.save_but).setOnClickListener(this::saveData);
+        videoRecorder.setSceneView(fragment.getArSceneView());
+        int orientation = getResources().getConfiguration().orientation;
+        videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_720P, orientation);
         debugText = findViewById(R.id.text_debug);
         worldToScreenTranslator = new WorldToScreenTranslator();
         positions3D = new ArrayList<>();
     }
 
     private boolean scanning = false;
+    private boolean recording = false;
     private void testingMethod(View v){
+        recording = videoRecorder.onToggleRecord();
         if(scanning){
             scanning = false;
+            recording = false;
             return;
         }
         if(fragment.getArSceneView().getSession() == null){
@@ -89,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No frame found!", Toast.LENGTH_SHORT);
         }
         scanning = true;
+        recording = true;
         PointCloudNode pcNode = new PointCloudNode(getApplicationContext());
         fragment.getArSceneView().getScene().addChild(pcNode);
         fragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
@@ -179,6 +187,11 @@ public class MainActivity extends AppCompatActivity {
         matrix.setRotate(90);
 
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+    private void saveData(View v){
+        fragment.getArSceneView().setupSession(null);
+        createCSVFromFeaturePoints(v);
+        videoRecorder.onToggleRecord();
     }
     private void createCSVFromFeaturePoints(View v){
         String dataPoints = "";
