@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.google.ar.core.PointCloud;
 import com.google.ar.core.exceptions.NotYetAvailableException;
+import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.ux.ArFragment;
 
 import java.io.BufferedWriter;
@@ -72,8 +73,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dataDir.mkdir();
         }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName_pc = "PCdata_" + timeStamp + ".csv";
-        String fileName_sensor = "Sensordata_" + timeStamp + ".csv";
+        String fileName_pc = "data_" + timeStamp + ".pcl";
+        String fileName_sensor = "data_" + timeStamp + ".csv";
         File fileDir = new File(dataDir.getPath()  + File.separator + fileName_pc);
         File sensorFileDir = new File(dataDir.getPath() + File.separator + fileName_sensor);
         try{
@@ -84,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         fragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.sceneform_fragment);
+        /*
+            Remove the plane rendering.
+         */
+        fragment.getArSceneView().getPlaneRenderer().setEnabled(false);
         findViewById(R.id.test_but).setOnClickListener(this::caller);
         findViewById(R.id.save_but).setOnClickListener(this::saveData);
         videoRecorder.setSceneView(fragment.getArSceneView());
@@ -107,11 +112,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
+        /*
         try {
             bufferedWriter.write("Time,SensorID,val0,val1,val2" + "\n");
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         recording = videoRecorder.onToggleRecord();
         if(scanning){
             scanning = false;
@@ -128,16 +134,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         scanning = true;
         recording = true;
-        PointCloudNode pcNode = new PointCloudNode(getApplicationContext());
-        fragment.getArSceneView().getScene().addChild(pcNode);
+        /*
+            For rendering the point cloud points. Stopped now.
+         */
+
+        //PointCloudNode pcNode = new PointCloudNode(getApplicationContext());
+        //fragment.getArSceneView().getScene().addChild(pcNode);
         fragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
             if(!scanning) return;
 
             PointCloud pc = fragment.getArSceneView().getArFrame().acquirePointCloud();
-            PCtimeStamp = pc.getTimestamp()/1e+9;
-            pcNode.update(pc);
+            //pcNode.update(pc);
 
             try {
+                fragment.getPlaneDiscoveryController().hide();
+                fragment.getPlaneDiscoveryController().setInstructionView(null);
                 FloatBuffer points = pc.getPoints();
                 Log.i(TAG, "" + points.limit());
 
@@ -153,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     int[] color = getScreenPixel(w);
                     if(color == null || color.length != 3)
                         continue;
+                    PCtimeStamp = pc.getTimestamp()/1e+9;
                     cloudPoints.add(new Float[]{points.get(i), points.get(i + 1), points.get(i + 2)});
                     debugText.setText("" + cloudPoints.size() + " points scanned.");
                     colorPoints.add(new Integer[]{color[0], color[1], color[2]});
@@ -221,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
     private void saveData(View v){
-        fragment.getArSceneView().setupSession(null);
+        //fragment.getArSceneView().setupSession(null);
         createCSVFromFeaturePoints(v);
         videoRecorder.onToggleRecord();
         try {
@@ -232,13 +244,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     private void createCSVFromFeaturePoints(View v){
         String dataPoints = "";
-        //String colorDataPoints = "";
         for (int i = 0; i < cloudPoints.size(); i++) {
             dataPoints += Arrays.toString(cloudPoints.get(i)) + "," + Arrays.toString(colorPoints.get(i)) + ",";
-            //colorDataPoints += Arrays.toString(colorPoints.get(i)) + ",";
-
             dataPoints += "\n";
         }
+        dataPoints = dataPoints.replace("[", "").replace("]", "");
         saveCSVToFile(dataPoints);
         Log.d(TAG, "Datapoints: " + dataPoints);
     }

@@ -127,7 +127,7 @@ public class VideoRecorder {
                                     + "/PointCloudData");
         }
         if (videoBaseName == null || videoBaseName.isEmpty()) {
-            videoBaseName = "VID_";
+            videoBaseName = "data_";
         }
         videoPath =
                 new File(
