@@ -149,7 +149,7 @@ public class RecorderService extends Service {
     }
 
     public static File getOutputMediaFile(int type){
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "SpyVideo");
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "RGBFeed");
         if(!mediaStorageDir.exists()){
             if(!mediaStorageDir.mkdirs()){
                 Log.d("MyCameraApp", "Failed To Create Directory!");
