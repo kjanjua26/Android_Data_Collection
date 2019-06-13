@@ -7,3 +7,6 @@ The application without ARCore does the following tasks:
   <li>Records video feed and stores it in MOVIES directory.</li>
   <li>Grabs sensor readings such as Gyroscope, Accelerometer, Barometer and stores it in a CSV file in DOWNLOADS directory.</li>
 </ul>
+
+## Simultaneous Recording UI
+<img src="UI/AppUI.jpg"/>
