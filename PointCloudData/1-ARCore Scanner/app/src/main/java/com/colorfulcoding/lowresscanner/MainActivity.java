@@ -1,6 +1,8 @@
 package com.colorfulcoding.lowresscanner;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,11 +17,18 @@ import android.hardware.SensorManager;
 import android.media.CamcorderProfile;
 import android.media.Image;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,7 +51,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, PopupMenu.OnMenuItemClickListener {
     private final String TAG = "MainActivity";
     private final float MIN_DIST_THRESHOLD = 0.01f; // 1cm
     private ArFragment fragment;
@@ -57,6 +66,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Sensor gyroscope;
     Sensor barometric;
 
+    boolean gyroSwitchPref;
+    boolean accSwitchPref;
+    boolean presSwitchPref;
+    boolean arCoreSwitchPref;
+    boolean isStart = false;
+
+    Button startBtn;
+
     FileWriter writer;
     BufferedWriter bufferedWriter;
 
@@ -68,56 +85,106 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Data Writing.
          */
         videoRecorder = new VideoRecorder();
-        File dataDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PointCloudData");
-        if(!dataDir.exists()){
-            dataDir.mkdir();
-        }
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName_pc = "data_" + timeStamp + ".pcl";
-        String fileName_sensor = "data_" + timeStamp + ".csv";
-        File fileDir = new File(dataDir.getPath()  + File.separator + fileName_pc);
-        File sensorFileDir = new File(dataDir.getPath() + File.separator + fileName_sensor);
-        try{
-            writer = new FileWriter(fileDir);
-            bufferedWriter = new BufferedWriter(new FileWriter(sensorFileDir));
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
         fragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.sceneform_fragment);
         /*
             Remove the plane rendering.
          */
         fragment.getArSceneView().getPlaneRenderer().setEnabled(false);
-        findViewById(R.id.test_but).setOnClickListener(this::caller);
-        findViewById(R.id.save_but).setOnClickListener(this::saveData);
+        startBtn = findViewById(R.id.save_but);
         videoRecorder.setSceneView(fragment.getArSceneView());
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        gyroSwitchPref = sharedPrefs.getBoolean("gyroPref", false);
+        accSwitchPref = sharedPrefs.getBoolean("accPref", false);
+        presSwitchPref = sharedPrefs.getBoolean("presPref", false);
+        arCoreSwitchPref = sharedPrefs.getBoolean("arcorePref", false);
+
         int orientation = getResources().getConfiguration().orientation;
         videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_720P, orientation);
         debugText = findViewById(R.id.text_debug);
         worldToScreenTranslator = new WorldToScreenTranslator();
         cloudPoints = new ArrayList<>();
         colorPoints = new ArrayList<>();
+        startBtn.setOnClickListener(view -> {
+            if(isStart) {
+                saveData(view);
+                stopARCore();
+            }else{
+                startBtn.setText("Stop");
+                caller(view);
+            }
+            isStart = !isStart;
+        });
     }
 
     private boolean scanning = false;
     private boolean recording = false;
 
+    public void showMenu(View v){
+        PopupMenu popupMenu = new PopupMenu(this, v);
+        popupMenu.setOnMenuItemClickListener(MainActivity.this);
+        popupMenu.inflate(R.menu.mymenu);
+        popupMenu.show();
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+        return true;
+    }
+
     private void caller(View v){
+        // TODO: Requires code clean up.
+
+        File dataDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PointCloudData");
+        if (!dataDir.exists()) {
+            dataDir.mkdir();
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName_pc = "data_" + timeStamp + ".pcl";
+        String fileName_sensor = "data_" + timeStamp + ".csv";
+        File fileDir = new File(dataDir.getPath() + File.separator + fileName_pc);
+        File sensorFileDir = new File(dataDir.getPath() + File.separator + fileName_sensor);
+
+        // Case # 01: If either acc, gyro or pressure is selected AND arcore is selected, write both files.
+        if(gyroSwitchPref || accSwitchPref || presSwitchPref && arCoreSwitchPref) {
+            try {
+                writer = new FileWriter(fileDir);
+                bufferedWriter = new BufferedWriter(new FileWriter(sensorFileDir));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // Case # 02: If only ARCore is selected, no need to create a sensor writer.
+        else if(!gyroSwitchPref && !accSwitchPref && !presSwitchPref && arCoreSwitchPref){
+            try {
+                writer = new FileWriter(fileDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE); /* Got the permission to use the sensor. */
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         barometric = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 
-        sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
-        /*
-        try {
-            bufferedWriter.write("Time,SensorID,val0,val1,val2" + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+        if(accSwitchPref && presSwitchPref && gyroSwitchPref){
+            sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
+        }else if (accSwitchPref && gyroSwitchPref){
+            sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        }else if (accSwitchPref && presSwitchPref){
+            sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
+        }else if (gyroSwitchPref && presSwitchPref){
+            sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(MainActivity.this, barometric, sensorManager.SENSOR_DELAY_NORMAL);
+        }
+
         recording = videoRecorder.onToggleRecord();
         if(scanning){
             scanning = false;
@@ -137,44 +204,44 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         /*
             For rendering the point cloud points. Stopped now.
          */
-
         //PointCloudNode pcNode = new PointCloudNode(getApplicationContext());
         //fragment.getArSceneView().getScene().addChild(pcNode);
-        fragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
-            if(!scanning) return;
+        if(arCoreSwitchPref) {
+            fragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
+                if (!scanning) return;
 
-            PointCloud pc = fragment.getArSceneView().getArFrame().acquirePointCloud();
-            //pcNode.update(pc);
+                PointCloud pc = fragment.getArSceneView().getArFrame().acquirePointCloud();
+                //pcNode.update(pc);
+                try {
+                    fragment.getPlaneDiscoveryController().hide();
+                    fragment.getPlaneDiscoveryController().setInstructionView(null);
+                    FloatBuffer points = pc.getPoints();
+                    Log.i(TAG, "" + points.limit());
 
-            try {
-                fragment.getPlaneDiscoveryController().hide();
-                fragment.getPlaneDiscoveryController().setInstructionView(null);
-                FloatBuffer points = pc.getPoints();
-                Log.i(TAG, "" + points.limit());
+                    for (int i = 0; i < points.limit(); i += 4) {
+                        float[] w = new float[]{points.get(i), points.get(i + 1), points.get(i + 2)};
+                        Optional<Float> minDist = cloudPoints.stream()
+                                .map(vec -> this.squaredDistance(vec, w))
+                                .min((d1, d2) -> d1 - d2 < 0 ? -1 : 1);
+                        if (minDist.orElse(1000f) < MIN_DIST_THRESHOLD * MIN_DIST_THRESHOLD) {
+                            continue;
+                        }
 
-                for(int i=0; i< points.limit(); i+=4) {
-                    float[] w = new float[]{points.get(i), points.get(i + 1), points.get(i + 2)};
-                    Optional<Float> minDist = cloudPoints.stream()
-                            .map(vec -> this.squaredDistance(vec, w))
-                            .min((d1, d2) -> d1 - d2 < 0? -1:1);
-                    if (minDist.orElse(1000f) < MIN_DIST_THRESHOLD * MIN_DIST_THRESHOLD){
-                        continue;
+                        int[] color = getScreenPixel(w);
+                        if (color == null || color.length != 3)
+                            continue;
+                        PCtimeStamp = pc.getTimestamp() / 1e+9;
+                        cloudPoints.add(new Float[]{points.get(i), points.get(i + 1), points.get(i + 2)});
+                        debugText.setText("" + cloudPoints.size() + " points scanned.");
+                        colorPoints.add(new Integer[]{color[0], color[1], color[2]});
+                        return;
                     }
-
-                    int[] color = getScreenPixel(w);
-                    if(color == null || color.length != 3)
-                        continue;
-                    PCtimeStamp = pc.getTimestamp()/1e+9;
-                    cloudPoints.add(new Float[]{points.get(i), points.get(i + 1), points.get(i + 2)});
-                    debugText.setText("" + cloudPoints.size() + " points scanned.");
-                    colorPoints.add(new Integer[]{color[0], color[1], color[2]});
-                    return;
+                    pc.release();
+                } catch (NotYetAvailableException e) {
+                    Log.e(TAG, e.getMessage());
                 }
-                pc.release();
-            } catch (NotYetAvailableException e) {
-                Log.e(TAG, e.getMessage());
-            }
-        });
+            });
+        }
     }
     private float squaredDistance(Float[] v, float[] w){
         float sumSquare = 0;
@@ -251,6 +318,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dataPoints = dataPoints.replace("[", "").replace("]", "");
         saveCSVToFile(dataPoints);
         Log.d(TAG, "Datapoints: " + dataPoints);
+        /*
+            Stop the AR session here and restart the activity here.
+         */
+        stopARCore();
     }
     private void saveCSVToFile(String data){
         try {
@@ -268,6 +339,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public void stopARCore(){
+        fragment.getArSceneView().destroy();
+        startActivity(new Intent(MainActivity.this, MainActivity.class));
     }
 
     @Override

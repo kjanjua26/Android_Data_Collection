@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="arcorePref"
+        android:summary="(time, int, val0,..)"
+        android:title="ARCore" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="gyroPref"
+        android:summary="(time, int, val0,..)"
+        android:title="Gyroscope" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="accPref"
+        android:summary="(time, int, val0,..)"
+        android:title="Accelerometer" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="presPref"
+        android:summary="(time, int, val0)"
+        android:title="Pressure" />
+</PreferenceScreen>

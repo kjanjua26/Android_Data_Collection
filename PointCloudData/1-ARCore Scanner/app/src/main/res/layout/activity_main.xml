@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="MissingConstraints">
+    </android.support.v7.widget.Toolbar>
+
     <fragment
         android:id = "@+id/sceneform_fragment"
         android:name="com.google.ar.sceneform.ux.ArFragment"
@@ -17,15 +24,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
+
         <TextView
             android:id="@+id/text_debug"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize= "32dp"
-            android:textColor="#fff"
             android:text="0"
-            />
+            android:textColor="#fff"
+            android:textSize="32dp" />
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -36,23 +43,26 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_centerInParent="true"/>
-            <Button
-                android:id="@+id/test_but"
-                android:text="Scan"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_alignRight="@id/fakeView"
-                android:layout_alignParentLeft="true"
-                />
+
             <Button
                 android:id="@+id/save_but"
-                android:text="Save"
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignLeft="@id/fakeView"
                 android:layout_alignParentRight="true"
-                />
+                android:layout_marginLeft="-101dp"
+                android:layout_marginRight="100dp"
+                android:text="Start" />
         </RelativeLayout>
+
+        <ImageButton
+            android:id="@+id/imageButton"
+            style="?android:attr/actionOverflowButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-44dp"
+            android:layout_toEndOf="@+id/text_debug"
+            android:onClick="showMenu" />
 
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>
