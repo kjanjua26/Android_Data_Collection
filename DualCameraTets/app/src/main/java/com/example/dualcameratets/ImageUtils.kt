@@ -85,7 +85,7 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
         val bytes = ByteArray(buffer.remaining())
         buffer.get(bytes)
         save(bytes, "SINGLE_SHOT")
-        val wasFaceDetected = true
+        //val wasFaceDetected = true
         /*
         val wasFaceDetected: Boolean =
             CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF != cameraParams.bestFaceDetectionMode
@@ -95,8 +95,8 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
         */
 
         //1. Single lens: cut out head, paste it on blurred/sepia'd background
-        val backgroundImageBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, null)
-        val foregroundImageBitmap = backgroundImageBitmap.copy(backgroundImageBitmap.config, true)
+        //val backgroundImageBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, null)
+        //val foregroundImageBitmap = backgroundImageBitmap.copy(backgroundImageBitmap.config, true)
 
         /*
         if (PrefHelper.getIntermediate(activity)) {
@@ -106,21 +106,21 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
         }*/
 
         //Foreground
-        var croppedForeground = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
-        croppedForeground = cropBitmap(activity, foregroundImageBitmap, cameraParams.expandedFaceBounds)
+        //var croppedForeground = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
+        //croppedForeground = cropBitmap(activity, foregroundImageBitmap, cameraParams.expandedFaceBounds)
         /*
             Save both shots.
             TODO: REMEMBER => Interested in CroppedHead and FeatheredHead only. => ONLY FOR SINGLE SHOT.
             TODO: Remove the face restriction.
          */
-        save(croppedForeground, "CroppedHead")
+        //save(croppedForeground, "CroppedHead")
 
         /*if (PrefHelper.getSaveIntermediate(activity)) {
             save(croppedForeground, "CroppedHead")
             WriteFile(activity, croppedForeground,"CroppedHead", 100, true)
         }*/
 
-        val scaledForeground = scaleBitmap(croppedForeground, MainActivity.BLUR_SCALE_FACTOR)
+        //val scaledForeground = scaleBitmap(croppedForeground, MainActivity.BLUR_SCALE_FACTOR)
 
         /*if (PrefHelper.getIntermediate(activity)) {
             activity.runOnUiThread {
@@ -128,8 +128,8 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
             }
         }*/
 
-        val featheredForeground = featherBitmap(activity, scaledForeground, 0.20f)
-        save(featheredForeground , "FeatheredHead")
+        //al featheredForeground = featherBitmap(activity, scaledForeground, 0.20f)
+        //save(featheredForeground , "FeatheredHead")
 
         /*if (PrefHelper.getSaveIntermediate(activity)) {
             save(featheredForeground , "FeatheredHead")
@@ -142,9 +142,9 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
             }
         }*/
 
-        val scaledBackground = scaleBitmap(backgroundImageBitmap, MainActivity.BLUR_SCALE_FACTOR)
+        //val scaledBackground = scaleBitmap(backgroundImageBitmap, MainActivity.BLUR_SCALE_FACTOR)
 
-        var sepiaBackground = Bitmap.createBitmap(scaledBackground)
+        //var sepiaBackground = Bitmap.createBitmap(scaledBackground)
         /*if (PrefHelper.getSepia(activity))
             sepiaBackground = sepiaFilter(activity, scaledBackground)
         else
@@ -166,10 +166,21 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
             Saving the image regardless.
             TODO: Check THIS for face errors.
          */
+        //val rotatedImageBitmap = rotateBitmap(featheredForeground, capturedImageRotation.toFloat())
+
+        //var finalBitmap = rotatedImageBitmap
+
+        //If front facing camera, flip the bitmap
+        //if (cameraParams.isFront)
+        //    finalBitmap = horizontalFlip(finalBitmap)
+
+        //Set the image view to be the final
+        //setCapturedPhoto(activity, imageView, rotatedImageBitmap)
+        /*
         if (wasFaceDetected) {
-            val pasteRect = Rect(cameraParams.expandedFaceBounds)
-            pasteRect.top = (pasteRect.top.toFloat() * BLUR_SCALE_FACTOR).roundToInt()
-            pasteRect.left = (pasteRect.left.toFloat() * BLUR_SCALE_FACTOR).roundToInt()
+            //val pasteRect = Rect(cameraParams.expandedFaceBounds)
+            //pasteRect.top = (pasteRect.top.toFloat() * BLUR_SCALE_FACTOR).roundToInt()
+            //pasteRect.left = (pasteRect.left.toFloat() * BLUR_SCALE_FACTOR).roundToInt()
             //val combinedBitmap = pasteBitmap(activity, blurredBackground, featheredForeground, pasteRect)
             val rotatedImageBitmap = rotateBitmap(featheredForeground, capturedImageRotation.toFloat())
 
@@ -197,6 +208,7 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
             //Save to disk
 
         }
+        */
     }
 
 }
@@ -293,9 +305,9 @@ fun scaleBitmap(bitmap: Bitmap, scaleFactor: Float): Bitmap {
     return Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, true)
 }
 
-fun drawBox(activity: Activity, cameraParams: CameraParams, bitmap: Bitmap): Bitmap {
-    return drawBox(activity, bitmap, cameraParams.expandedFaceBounds)
-}
+//fun drawBox(activity: Activity, cameraParams: CameraParams, bitmap: Bitmap): Bitmap {
+//   return drawBox(activity, bitmap, cameraParams.expandedFaceBounds)
+//}
 
 fun drawBox(activity: Activity, bitmap: Bitmap, rect: Rect): Bitmap {
     val bitmapBoxed = bitmap.copy(Bitmap.Config.ARGB_8888, true);

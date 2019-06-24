@@ -32,7 +32,7 @@ class TextureListener(internal var params: CameraParams, internal val activity: 
 
     override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
         MainActivity.Logd("In surfaceTextureSizeChanged. Id: " + params.id)
-        rotatePreviewTexture(activity, params, textureView)
+        //rotatePreviewTexture(activity, params, textureView)
     }
 
     override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) : Boolean {

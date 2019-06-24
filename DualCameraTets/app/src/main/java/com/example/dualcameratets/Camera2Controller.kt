@@ -129,8 +129,8 @@ fun camera2OpenCamera(activity: MainActivity, params: CameraParams?) {
         params.cameraCallback = CameraStateCallback(params, activity)
         params.captureCallback = FocusCaptureSessionCallback(activity, params)
 
-        rotatePreviewTexture(activity, params, activity.texture_foreground as AutoFitTextureView)
-        rotatePreviewTexture(activity, params, activity.texture_background as AutoFitTextureView)
+        //rotatePreviewTexture(activity, params, activity.texture_foreground as AutoFitTextureView)
+        //rotatePreviewTexture(activity, params, activity.texture_background as AutoFitTextureView)
 
         //We have a dual lens situation, only open logical cam
         if (!MainActivity.dualCamLogicalId.equals("")
@@ -219,32 +219,17 @@ fun lockFocus(activity: MainActivity, params: CameraParams) {
         if (null != camera) {
             params.captureBuilder?.addTarget(params.imageReader?.surface)
             setAutoFlash(activity, camera, params.captureBuilder)
-
+            captureStillPicture(activity, params)
             //If this lens can focus, we need to start a focus search and wait for focus lock
-            if (params.hasAF) {
-                Logd("In lockFocus. About to request focus lock and call capture.")
-//                params.captureBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-//                setAutoFlash(activity, camera, params.captureBuilder)
-//                params.captureBuilder?.addTarget(params.imageReader?.getSurface())
-//                params.captureBuilder?.set(CaptureRequest.CONTROL_AF_TRIGGER,
-//                        CameraMetadata.CONTROL_AF_TRIGGER_START);
-                //               params.captureBuilder?.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
-//                params.captureBuilder?.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-                params.state = STATE_PICTURE_TAKEN
-                captureStillPicture(activity, params)
-
-
-//                params.state = STATE_WAITING_LOCK
-//                params.captureSession?.capture(params.captureBuilder?.build(), params.captureCallback,
-                //                       params.backgroundHandler)
-
-                //Otherwise, a fixed focus lens so we can go straight to taking the image
-            } else {
-                Logd("In lockFocus. Fixed focus lens about call captureStillPicture.")
-                params.state = STATE_PICTURE_TAKEN
-                captureStillPicture(activity, params)
-            }
-        }
+            //if (params.hasAF) {
+            //    Logd("In lockFocus. About to request focus lock and call capture.")
+            //    params.state = STATE_PICTURE_TAKEN
+            //    captureStillPicture(activity, params)
+            } //else {
+               // Logd("In lockFocus. Fixed focus lens about call captureStillPicture.")
+               // params.state = STATE_PICTURE_TAKEN
+               // captureStillPicture(activity, params)
+            //}
 
     } catch (e: CameraAccessException) {
         e.printStackTrace()
@@ -310,22 +295,9 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
                 params.captureBuilder?.addTarget(normalParams.imageReader?.surface!!)
                 params.captureBuilder?.addTarget(wideParams.imageReader?.surface!!)
 
-            } else {
-                //Default to wide
-                val wideParams: CameraParams? = MainActivity.cameraParams.get(wideAngleId)
-                if (null != wideParams)
-                    params.captureBuilder?.addTarget(wideParams.imageReader?.surface!!)
-                else
-                    params.captureBuilder?.addTarget(params.imageReader?.getSurface())
             }
-
-//            if (params.hasAF) {
-//                    params.captureBuilder?.set(CaptureRequest.CONTROL_AF_TRIGGER,
-//                            CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
-//            }
-
             //Otherwise too dark
-            params.captureBuilder?.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, 4);
+            params.captureBuilder?.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, 4)
 
             params.captureBuilder?.set(CaptureRequest.JPEG_QUALITY, 100)
 
@@ -343,9 +315,9 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
             }
 
             // Request face detection
-            if (CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF != params.bestFaceDetectionMode)
-                params.captureBuilder?.set(CaptureRequest.STATISTICS_FACE_DETECT_MODE, params.bestFaceDetectionMode)
-            Logd("FACE-DETECT DEBUG: I am setting face-detect mode to: " + params.bestFaceDetectionMode)
+            //if (CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF != params.bestFaceDetectionMode)
+            //    params.captureBuilder?.set(CaptureRequest.STATISTICS_FACE_DETECT_MODE, params.bestFaceDetectionMode)
+            //Logd("FACE-DETECT DEBUG: I am setting face-detect mode to: " + params.bestFaceDetectionMode)
 
             // Orientation
             val rotation = activity.getWindowManager().getDefaultDisplay().getRotation()
@@ -373,7 +345,7 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
         Logd("captureStillPicture IllegalStateException, aborting: " + e)
     }
 }
-
+@SuppressLint("NewApi")
 fun unlockFocus(activity: MainActivity, params: CameraParams) {
     Logd("In unlockFocus.")
 
@@ -382,14 +354,7 @@ fun unlockFocus(activity: MainActivity, params: CameraParams) {
     }
 
     try {
-        if (null != params.device) {
-            // Reset auto-focus
-//                params.captureRequestBuilder?.set(CaptureRequest.CONTROL_AF_TRIGGER,
-//                        CaptureRequest.CONTROL_AF_TRIGGER_CANCEL)
-//                params.captureSession?.capture(params.captureRequestBuilder?.build(), params.captureCallback,
-//                        params.backgroundHandler)
-//                createCameraPreviewSession(activity, camera, params, testConfig)
-        }
+        if (null != params.device) {}
     } catch (e: CameraAccessException) {
         e.printStackTrace()
 
@@ -398,7 +363,7 @@ fun unlockFocus(activity: MainActivity, params: CameraParams) {
     }
 
 }
-
+/*
 @SuppressLint("NewApi")
 fun rotatePreviewTexture(activity: MainActivity, params: CameraParams, textureView: AutoFitTextureView) {
     val rotation: Int = activity.windowManager.defaultDisplay.rotation
@@ -419,22 +384,5 @@ fun rotatePreviewTexture(activity: MainActivity, params: CameraParams, textureVi
     } else if (Surface.ROTATION_180 == rotation) {
         matrix.postRotate(180f, centerX, centerY);
     }
-    textureView.setTransform(matrix);
-
-}
-
-
-
-internal fun shutterControl(activity: Activity, shutter: View, openShutter: Boolean) {
-/*    activity.runOnUiThread {
-        if (openShutter)
-            shutter.visibility = View.INVISIBLE
-        else
-            shutter.visibility = View.VISIBLE
-    }
-*/
-}
-
-fun camera2Abort(activity: MainActivity, params: CameraParams) {
-//    activity.stopBackgroundThread(params)
-}
+    textureView.setTransform(matrix)
+}*/

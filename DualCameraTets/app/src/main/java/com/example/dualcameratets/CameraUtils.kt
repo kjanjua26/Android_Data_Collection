@@ -37,7 +37,7 @@ fun initializeCameras(activity: MainActivity) {
                     when (capability) {
                         CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA -> hasMulti = true
                         CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR -> hasManualControl = true
-                        CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT -> hasDepth = true
+                        //CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT -> hasDepth = true
                     }
                 }
 
@@ -48,13 +48,13 @@ fun initializeCameras(activity: MainActivity) {
                 hasFlash = cameraChars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
                 isFront = CameraCharacteristics.LENS_FACING_FRONT == cameraChars.get(CameraCharacteristics.LENS_FACING)
                 characteristics = cameraChars
-                focalLengths = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
-                smallestFocalLength = smallestFocalLength(focalLengths)
-                minDeltaFromNormal = focalLengthMinDeltaFromNormal(focalLengths)
+                //focalLengths = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                //smallestFocalLength = smallestFocalLength(focalLengths)
+                //minDeltaFromNormal = focalLengthMinDeltaFromNormal(focalLengths)
 
-                apertures = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
-                largestAperture = largestAperture(apertures)
-                minFocusDistance = cameraChars.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
+                //apertures = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
+                //largestAperture = largestAperture(apertures)
+                //minFocusDistance = cameraChars.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
 
                 if (Build.VERSION.SDK_INT >= 28) {
                     canSync = cameraChars.get(CameraCharacteristics.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE) == CameraMetadata.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED
@@ -63,54 +63,54 @@ fun initializeCameras(activity: MainActivity) {
                 }
                 //Bokeh calculations
                 if (Build.VERSION.SDK_INT >= 28) {
-                    lensDistortion = cameraChars.get(CameraCharacteristics.LENS_DISTORTION)
-                    intrinsicCalibration = cameraChars.get(CameraCharacteristics.LENS_INTRINSIC_CALIBRATION)
-                    poseRotation = cameraChars.get(CameraCharacteristics.LENS_POSE_ROTATION)
-                    poseTranslation = cameraChars.get(CameraCharacteristics.LENS_POSE_TRANSLATION)
+                    //lensDistortion = cameraChars.get(CameraCharacteristics.LENS_DISTORTION)
+                    //intrinsicCalibration = cameraChars.get(CameraCharacteristics.LENS_INTRINSIC_CALIBRATION)
+                    //poseRotation = cameraChars.get(CameraCharacteristics.LENS_POSE_ROTATION)
+                    //poseTranslation = cameraChars.get(CameraCharacteristics.LENS_POSE_TRANSLATION)
 
-                    distortionModes = cameraChars.get(CameraCharacteristics.DISTORTION_CORRECTION_AVAILABLE_MODES) ?: intArrayOf(CameraMetadata.DISTORTION_CORRECTION_MODE_OFF)
+                    //distortionModes = cameraChars.get(CameraCharacteristics.DISTORTION_CORRECTION_AVAILABLE_MODES) ?: intArrayOf(CameraMetadata.DISTORTION_CORRECTION_MODE_OFF)
 
 //                    for (mode in distortionModes) {
 //                        Logd("This camera has distortion mode: " + mode)
 //                    }
                 }
 
-                for (focalLength in focalLengths) {
-                    MainActivity.Logd("In " + id + " found focalLength: " + focalLength)
-                }
-                MainActivity.Logd("Smallest smallestFocalLength: " + smallestFocalLength)
-                MainActivity.Logd("minFocusDistance: " + minFocusDistance)
+                //for (focalLength in focalLengths) {
+                //    MainActivity.Logd("In " + id + " found focalLength: " + focalLength)
+                //}
+                //MainActivity.Logd("Smallest smallestFocalLength: " + smallestFocalLength)
+                //MainActivity.Logd("minFocusDistance: " + minFocusDistance)
 
-                for (aperture in apertures) {
-                    MainActivity.Logd("In " + id + " found aperture: " + aperture)
-                }
-                MainActivity.Logd("Largest aperture: " + largestAperture)
+                //for (aperture in apertures) {
+                //    MainActivity.Logd("In " + id + " found aperture: " + aperture)
+               //}
+                //MainActivity.Logd("Largest aperture: " + largestAperture)
 
-                if (hasManualControl) {
-                    MainActivity.Logd("Has Manual, minFocusDistance: " + minFocusDistance)
-                }
+                //if (hasManualControl) {
+                //    MainActivity.Logd("Has Manual, minFocusDistance: " + minFocusDistance)
+                //}
 
-                effects = cameraChars.get(CameraCharacteristics.CONTROL_AVAILABLE_EFFECTS)
-                hasSepia = effects.contains(CameraMetadata.CONTROL_EFFECT_MODE_SEPIA)
-                hasMono = effects.contains(CameraMetadata.CONTROL_EFFECT_MODE_MONO)
-                hasAF = minFocusDistance != MainActivity.FIXED_FOCUS_DISTANCE //If camera is fixed focus, no AF
+                //effects = cameraChars.get(CameraCharacteristics.CONTROL_AVAILABLE_EFFECTS)
+                //hasSepia = effects.contains(CameraMetadata.CONTROL_EFFECT_MODE_SEPIA)
+                //hasMono = effects.contains(CameraMetadata.CONTROL_EFFECT_MODE_MONO)
+                //hasAF = minFocusDistance != MainActivity.FIXED_FOCUS_DISTANCE //If camera is fixed focus, no AF
 
 
-                if (hasSepia)
-                    MainActivity.Logd("WE HAVE Sepia!")
-                if (hasMono)
-                    MainActivity.Logd("WE HAVE Mono!")
-                if (hasAF)
-                    MainActivity.Logd("Camera " + id + " has autofocus.")
-                else
-                    MainActivity.Logd("Camera " + id + " is fixed-focus.")
+                //if (hasSepia)
+                //    MainActivity.Logd("WE HAVE Sepia!")
+                //if (hasMono)
+                //    MainActivity.Logd("WE HAVE Mono!")
+                //if (hasAF)
+                //    MainActivity.Logd("Camera " + id + " has autofocus.")
+                //else
+                //    MainActivity.Logd("Camera " + id + " is fixed-focus.")
 
 
                 //Facical detection
-                val faceDetectModes: IntArray = cameraChars.get(CameraCharacteristics.STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES)
-                if (faceDetectModes.isNotEmpty()) {
-                    bestFaceDetectionMode = faceDetectModes.last()
-                }
+                //val faceDetectModes: IntArray = cameraChars.get(CameraCharacteristics.STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES)
+                //if (faceDetectModes.isNotEmpty()) {
+                //    bestFaceDetectionMode = faceDetectModes.last()
+                //}
 
                 /*
                 for (mode in faceDetectModes) {
@@ -119,8 +119,8 @@ fun initializeCameras(activity: MainActivity) {
                 }
                 */
 
-                if (hasDepth)
-                    Logd("This camera has depth output!")
+                //if (hasDepth)
+                //   Logd("This camera has depth output!")
 
                 //capturedPhoto = activity.imagePhoto
 
@@ -177,10 +177,10 @@ fun initializeCameras(activity: MainActivity) {
                     //Determine the widest angle lens
                     MainActivity.wideAngleId = tempCameraParams.value.physicalCameras.first()
                     for (physicalCamera in tempCameraParams.value.physicalCameras) {
-                        val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
-                        val minLens: Float = MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
-                        if (tempLens < minLens)
-                            MainActivity.wideAngleId = physicalCamera
+                        //val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
+                        //val minLens: Float = MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
+                        //if (tempLens < minLens)
+                        //    MainActivity.wideAngleId = physicalCamera
                     }
 
                     //Determine the closest to "normal" that is not the wide angle lens
@@ -193,15 +193,15 @@ fun initializeCameras(activity: MainActivity) {
                         if (normalLensId == wideAngleId)
                             normalLensId = physicalCamera
 
-                        val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
-                        val normalLens: Float = MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
-                        if (tempLens < normalLens)
-                            MainActivity.normalLensId = physicalCamera
+                        //val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
+                        //val normalLens: Float = MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
+                        //if (tempLens < normalLens)
+                        //    MainActivity.normalLensId = physicalCamera
                     }
                 }
 
-                MainActivity.Logd("Found a multi: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
-                        + ") and normal: " + MainActivity.normalLensId + " (" + MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal + ")")
+                //MainActivity.Logd("Found a multi: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
+                //        + ") and normal: " + MainActivity.normalLensId + " (" + MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal + ")")
 
                 //If we have a logical cam and two seprate physical cams
                 if (!MainActivity.logicalCamId.equals("")
@@ -216,22 +216,18 @@ fun initializeCameras(activity: MainActivity) {
             }
         }
 
-        MainActivity.Logd("Setting logical: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
-                + ") and normal: " + MainActivity.normalLensId + " (" + MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal + ")")
+        //MainActivity.Logd("Setting logical: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
+        //        + ") and normal: " + MainActivity.normalLensId + " (" + MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal + ")")
 
         MainActivity.cameraParams.get(MainActivity.wideAngleId)?.previewTextureView  = activity.texture_background
         MainActivity.cameraParams.get(MainActivity.wideAngleId)?.previewTextureView?.surfaceTextureListener =
-            TextureListener(MainActivity.cameraParams.get(MainActivity.wideAngleId)!!, activity,
-                activity.texture_background
-            )
+            TextureListener(MainActivity.cameraParams.get(MainActivity.wideAngleId)!!, activity, activity.texture_background)
 
         // If multi-camera, ready both preview textures
         if (MainActivity.wideAngleId != MainActivity.normalLensId) {
             MainActivity.cameraParams.get(MainActivity.normalLensId)?.previewTextureView  = activity.texture_foreground
             MainActivity.cameraParams.get(MainActivity.normalLensId)?.previewTextureView?.surfaceTextureListener =
-                TextureListener(MainActivity.cameraParams.get(MainActivity.normalLensId)!!, activity,
-                    activity.texture_foreground
-                )
+                TextureListener(MainActivity.cameraParams.get(MainActivity.normalLensId)!!, activity, activity.texture_foreground)
         }
 
 

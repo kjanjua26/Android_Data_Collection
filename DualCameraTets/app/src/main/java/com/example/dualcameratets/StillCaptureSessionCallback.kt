@@ -74,19 +74,19 @@ class StillCaptureSessionCallback(val activity: MainActivity, val params: Camera
         }
 
         MainActivity.Logd("captureStillPicture onCaptureCompleted. Hooray!.")
-        val mode = result.get(CaptureResult.STATISTICS_FACE_DETECT_MODE)
-        val faces = result.get(CaptureResult.STATISTICS_FACES)
+        //val mode = result.get(CaptureResult.STATISTICS_FACE_DETECT_MODE)
+        //val faces = result.get(CaptureResult.STATISTICS_FACES)
 
-        MainActivity.Logd("FACE-DETECT DEBUG: in onCaptureCompleted. CaptureResult.STATISTICS_FACE_DETECT_MODE is: " + mode)
+        //MainActivity.Logd("FACE-DETECT DEBUG: in onCaptureCompleted. CaptureResult.STATISTICS_FACE_DETECT_MODE is: " + mode)
 
-        if (faces != null && mode != null) {
+        /*if (faces != null && mode != null) {
             MainActivity.Logd("faces : " + faces.size + " , mode : " + mode)
             for (face in faces) {
                 val rect = face.bounds
                 MainActivity.Logd("Bounds: bottom: " + rect.bottom + " left: " + rect.left + " right: " + rect.right + " top: " + rect.top)
             }
             MainActivity.Logd("Image size: " + params.maxSize.width + " x " + params.maxSize.height)
-            if (faces.isNotEmpty()) {
+            /*if (faces.isNotEmpty()) {
                 //Toast.makeText(activity, "FOUND A FACE!", Toast.LENGTH_LONG).show()
                 params.hasFace = true
                 params.faceBounds = faces.first().bounds
@@ -111,14 +111,8 @@ class StillCaptureSessionCallback(val activity: MainActivity, val params: Camera
                     params.expandedFaceBounds.bottom = params.maxSize.height
 
                 MainActivity.Logd("Adjusted Face Bounds: bottom: " + params.expandedFaceBounds.bottom + " left: " + params.expandedFaceBounds.left + " right: " + params.expandedFaceBounds.right + " top: " + params.expandedFaceBounds.top)
-
-                //if (PrefHelper.getGrabCut(activity)) {
-                //Expand facebox to include an extra "head" to left and right, and all the way to bottom of photo
-                //    params.grabCutBounds = faceBoundsToGrabCutBounds(activity, params.expandedFaceBounds, params.maxSize.width, params.maxSize.height)
-                //    MainActivity.Logd("Grabcut Bounds: bottom: " + params.grabCutBounds.bottom + " left: " + params.grabCutBounds.left + " right: " + params.grabCutBounds.right + " top: " + params.grabCutBounds.top)
-                //}
-            }
-        }
+            }*/
+        }*/
 
         //It might be that we received this callback first and we're waiting for the image
         if (twoLens.isTwoLensShot) {
@@ -128,12 +122,12 @@ class StillCaptureSessionCallback(val activity: MainActivity, val params: Camera
                     twoLens.normalShotDone = true
                     twoLens.normalParams = MainActivity.cameraParams.get(normalLensId) ?: params
                     twoLens.wideParams = MainActivity.cameraParams.get(wideAngleId) ?: params
-                    twoLens.normalParams.hasFace =  params.hasFace
-                    twoLens.normalParams.faceBounds = params.faceBounds
-                    twoLens.normalParams.expandedFaceBounds = params.expandedFaceBounds
-                    twoLens.wideParams.hasFace = params.hasFace
-                    twoLens.wideParams.faceBounds = params.faceBounds
-                    twoLens.wideParams.expandedFaceBounds = params.expandedFaceBounds
+                    //twoLens.normalParams.hasFace =  params.hasFace
+                    //twoLens.normalParams.faceBounds = params.faceBounds
+                    //twoLens.normalParams.expandedFaceBounds = params.expandedFaceBounds
+                    //twoLens.wideParams.hasFace = params.hasFace
+                    //twoLens.wideParams.faceBounds = params.faceBounds
+                    //twoLens.wideParams.expandedFaceBounds = params.expandedFaceBounds
                 }
                 wideAngleId-> {
                     twoLens.wideShotDone = true

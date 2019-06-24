@@ -1,18 +1,25 @@
 package com.example.dualcameratets
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.nio.ByteBuffer
 import com.example.dualcameratets.MainActivity.Companion.Logd
 
+@SuppressLint("NewApi")
 fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
+    /*
+        TODO: HERE IS THAT FACE ERROR.
+        IT IS NOT A FACE ERROR BUT A TEMPBITMAP IS RETURNED BECAUSE NOT BOTH SHOTS ARRIVE.
+     */
+
     //Temporary Bitmap for flipping and rotation operations, to ensure correct memory clean-up
-    var tempBitmap: Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+    //var tempBitmap: Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
 
     //We need both shots to be done and both images in order to proceed
-    if (!twoLens.normalShotDone || !twoLens.wideShotDone || (null == twoLens.normalImage)
-        || (null == twoLens.wideImage))
-        return tempBitmap //Return empty bitmap
+    //if (!twoLens.normalShotDone || !twoLens.wideShotDone || (null == twoLens.normalImage)
+    //    || (null == twoLens.wideImage))
+    //    return tempBitmap //Return empty bitmap
 
     Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
     Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
@@ -25,17 +32,18 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     val normalBytes = ByteArray(normalBuffer!!.remaining())
     normalBuffer.get(normalBytes)
 
-
+    val options = BitmapFactory.Options()
     //val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
-    val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, null)
+    val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, options)
     //Utils.bitmapToMat(tempWideBitmap, wideMat)
 
     //val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
-    val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, null)
+
+    val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, options)
     //Utils.bitmapToMat(tempNormalBitmap, normalMat)
 
-    WriteFile(activity, tempWideBitmap,"WideShot")
-    WriteFile(activity, tempNormalBitmap, "NormalShot")
+    //WriteFile(activity, tempWideBitmap,"WideShot")
+    //WriteFile(activity, tempNormalBitmap, "NormalShot")
     save(tempNormalBitmap, "NormalShot")
     save(tempWideBitmap, "WideShot")
 
@@ -398,7 +406,7 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     return rotateBitmap(finalImage, getRequiredBitmapRotation(activity, true))
     */
 
-    return tempWideBitmap
+    return tempNormalBitmap
 }
 fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     val dArray: DoubleArray = DoubleArray(fArray.size)

@@ -41,28 +41,28 @@ class CameraParams {
     internal var previewTextureView: AutoFitTextureView? = null
 
     internal var physicalCameras: Set<String> = HashSet<String>()
-    internal var focalLengths: FloatArray = FloatArray(0)
-    internal var apertures: FloatArray = FloatArray(0)
-    internal var distortionModes: IntArray = IntArray(0)
-    internal var smallestFocalLength: Float = MainActivity.INVALID_FOCAL_LENGTH
-    internal var minDeltaFromNormal: Float = MainActivity.INVALID_FOCAL_LENGTH
-    internal var minFocusDistance: Float = MainActivity.FIXED_FOCUS_DISTANCE
-    internal var largestAperture: Float = NO_APERTURE
-    internal var effects: IntArray = IntArray(0)
-    internal var hasSepia: Boolean = false
-    internal var hasMono: Boolean = false
-    internal var hasAF: Boolean = false
+    //internal var focalLengths: FloatArray = FloatArray(0)
+    //internal var apertures: FloatArray = FloatArray(0)
+    //internal var distortionModes: IntArray = IntArray(0)
+    //internal var smallestFocalLength: Float = MainActivity.INVALID_FOCAL_LENGTH
+    //internal var minDeltaFromNormal: Float = MainActivity.INVALID_FOCAL_LENGTH
+    //internal var minFocusDistance: Float = MainActivity.FIXED_FOCUS_DISTANCE
+    //internal var largestAperture: Float = NO_APERTURE
+    //internal var effects: IntArray = IntArray(0)
+    //internal var hasSepia: Boolean = false
+    //internal var hasMono: Boolean = false
+    //internal var hasAF: Boolean = false
 
     internal var isLogicalBackedByPhysical: Boolean = false
 
-    internal var bestFaceDetectionMode: Int = 0
+    //internal var bestFaceDetectionMode: Int = 0
 
     //Bokeh calculations
-    internal var lensDistortion: FloatArray = FloatArray(0)
-    internal var intrinsicCalibration: FloatArray = FloatArray(0)
-    internal var poseRotation: FloatArray = FloatArray(0)
-    internal var poseTranslation: FloatArray = FloatArray(0)
-    internal var hasDepth: Boolean = false
+    //internal var lensDistortion: FloatArray = FloatArray(0)
+    //internal var intrinsicCalibration: FloatArray = FloatArray(0)
+    //internal var poseRotation: FloatArray = FloatArray(0)
+    //internal var poseTranslation: FloatArray = FloatArray(0)
+    //internal var hasDepth: Boolean = false
 
     internal var previewBuilder: CaptureRequest.Builder? = null
     internal var captureBuilder: CaptureRequest.Builder? = null
@@ -79,8 +79,8 @@ class CameraParams {
 
     internal var device: CameraDevice? = null
 
-    internal var hasFace: Boolean = false
-    internal var faceBounds: Rect = Rect(0, 0, 0, 0)
-    internal var expandedFaceBounds: Rect = Rect(0, 0, 0, 0)
-    internal var grabCutBounds: Rect = Rect(0, 0, 0, 0)
+    //internal var hasFace: Boolean = false
+    //internal var faceBounds: Rect = Rect(0, 0, 0, 0)
+    //internal var expandedFaceBounds: Rect = Rect(0, 0, 0, 0)
+    //internal var grabCutBounds: Rect = Rect(0, 0, 0, 0)
 }
