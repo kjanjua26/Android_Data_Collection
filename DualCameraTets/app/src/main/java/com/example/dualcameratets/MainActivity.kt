@@ -161,7 +161,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     companion object {
-        const val NORMAL_FOCAL_LENGTH: Float = 50f
+        //const val NORMAL_FOCAL_LENGTH: Float = 50f
         const val GAUSSIAN_BLUR_RADIUS: Float = 25f
         const val BLUR_SCALE_FACTOR: Float = 0.25f
         const val NO_APERTURE: Float = 0f

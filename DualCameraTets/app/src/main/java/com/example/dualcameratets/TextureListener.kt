@@ -1,6 +1,7 @@
 package com.example.dualcameratets
 
 
+import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -17,7 +18,7 @@ class TextureListener(internal var params: CameraParams, internal val activity: 
 
         //If we are a dual cam case, and both preview surfaces are ready, open them both
         if (!MainActivity.dualCamLogicalId.equals("")){
-            MainActivity.Logd("Dual Camera ID: " + MainActivity.dualCamLogicalId);
+            //MainActivity.Logd("Dual Camera ID: " + MainActivity.dualCamLogicalId);
             //&& MainActivity.cameraParams.get(MainActivity.wideAngleId)?.previewTextureView?.isAvailable == true
             //&& MainActivity.cameraParams.get(MainActivity.normalLensId)?.previewTextureView?.isAvailable == true) {
             val dualParams: CameraParams? = MainActivity.cameraParams.get(MainActivity.dualCamLogicalId)
@@ -35,6 +36,7 @@ class TextureListener(internal var params: CameraParams, internal val activity: 
         //rotatePreviewTexture(activity, params, textureView)
     }
 
+    @SuppressLint("NewApi")
     override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) : Boolean {
         MainActivity.Logd("In surfaceTextureDestroyed. Id: " + params.id)
 

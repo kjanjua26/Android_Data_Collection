@@ -3,8 +3,15 @@ package com.example.dualcameratets
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.nfc.Tag
+import android.util.Log
+import android.widget.Toast
 import java.nio.ByteBuffer
 import com.example.dualcameratets.MainActivity.Companion.Logd
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+
 
 @SuppressLint("NewApi")
 fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
@@ -20,7 +27,6 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     //if (!twoLens.normalShotDone || !twoLens.wideShotDone || (null == twoLens.normalImage)
     //    || (null == twoLens.wideImage))
     //    return tempBitmap //Return empty bitmap
-
     Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
     Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
 
@@ -32,16 +38,31 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     val normalBytes = ByteArray(normalBuffer!!.remaining())
     normalBuffer.get(normalBytes)
 
+    /*
+    var output: FileOutputStream? = null
+    try {
+            save(normalBytes, "test_save")
+    } catch (e: IOException) {
+        e.printStackTrace()
+    } finally {
+        twoLens.normalImage!!.close()
+        output?.let {
+            try {
+                it.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }*/
+
     val options = BitmapFactory.Options()
     //val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
     val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, options)
     //Utils.bitmapToMat(tempWideBitmap, wideMat)
 
     //val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
-
     val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, options)
     //Utils.bitmapToMat(tempNormalBitmap, normalMat)
-
     //WriteFile(activity, tempWideBitmap,"WideShot")
     //WriteFile(activity, tempNormalBitmap, "NormalShot")
     save(tempNormalBitmap, "NormalShot")
@@ -408,6 +429,7 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
 
     return tempNormalBitmap
 }
+/*
 fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     val dArray: DoubleArray = DoubleArray(fArray.size)
 
@@ -418,4 +440,4 @@ fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     }
 
     return dArray
-}
+}*/

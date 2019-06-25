@@ -142,13 +142,13 @@ fun camera2OpenCamera(activity: MainActivity, params: CameraParams?) {
             else
                 manager.openCamera(params.id, params.cameraCallback, params.backgroundHandler)
 
-        } else {
+        } /*else {
             Logd("openCamera: " + params.id)
             if (28 <= Build.VERSION.SDK_INT)
                 manager.openCamera(params.id, params.backgroundExecutor, params.cameraCallback)
             else
                 manager.openCamera(params.id, params.cameraCallback, params.backgroundHandler)
-        }
+        }*/
 
     } catch (e: CameraAccessException) {
         Logd("openCamera CameraAccessException: " + params.id)
@@ -197,7 +197,7 @@ fun closeCamera(params: CameraParams?, activity: MainActivity) {
 }
 
 
-
+@SuppressLint("NewApi")
 fun takePicture(activity: MainActivity, params: CameraParams) {
     Logd("TakePicture: capture start.")
 
@@ -205,7 +205,13 @@ fun takePicture(activity: MainActivity, params: CameraParams) {
         return
     }
 
-    lockFocus(activity, params)
+    val camera = params.captureSession?.getDevice()
+    if(camera != null){
+        params.captureBuilder?.addTarget(params.imageReader?.surface)
+        params.state = STATE_PICTURE_TAKEN
+        captureStillPicture(activity, params)
+    }
+    //lockFocus(activity, params)
 }
 @SuppressLint("NewApi")
 fun lockFocus(activity: MainActivity, params: CameraParams) {
@@ -218,7 +224,7 @@ fun lockFocus(activity: MainActivity, params: CameraParams) {
         val camera = params.captureSession?.getDevice()
         if (null != camera) {
             params.captureBuilder?.addTarget(params.imageReader?.surface)
-            setAutoFlash(activity, camera, params.captureBuilder)
+            //setAutoFlash(activity, camera, params.captureBuilder)
             captureStillPicture(activity, params)
             //If this lens can focus, we need to start a focus search and wait for focus lock
             //if (params.hasAF) {

@@ -48,13 +48,13 @@ fun initializeCameras(activity: MainActivity) {
                 hasFlash = cameraChars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
                 isFront = CameraCharacteristics.LENS_FACING_FRONT == cameraChars.get(CameraCharacteristics.LENS_FACING)
                 characteristics = cameraChars
-                //focalLengths = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
-                //smallestFocalLength = smallestFocalLength(focalLengths)
+                focalLengths = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                smallestFocalLength = smallestFocalLength(focalLengths)
                 //minDeltaFromNormal = focalLengthMinDeltaFromNormal(focalLengths)
 
                 //apertures = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
                 //largestAperture = largestAperture(apertures)
-                //minFocusDistance = cameraChars.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
+                minFocusDistance = cameraChars.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
 
                 if (Build.VERSION.SDK_INT >= 28) {
                     canSync = cameraChars.get(CameraCharacteristics.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE) == CameraMetadata.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED
@@ -153,7 +153,7 @@ fun initializeCameras(activity: MainActivity) {
 
         //Default to using the first camera for everything
         if (!MainActivity.cameraParams.keys.isEmpty()) {
-            MainActivity.logicalCamId = MainActivity.cameraParams.keys.first()
+            MainActivity.logicalCamId =   MainActivity.cameraParams.keys.first()
 
             MainActivity.wideAngleId = MainActivity.logicalCamId
             MainActivity.normalLensId = MainActivity.logicalCamId
@@ -177,10 +177,10 @@ fun initializeCameras(activity: MainActivity) {
                     //Determine the widest angle lens
                     MainActivity.wideAngleId = tempCameraParams.value.physicalCameras.first()
                     for (physicalCamera in tempCameraParams.value.physicalCameras) {
-                        //val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
-                        //val minLens: Float = MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
-                        //if (tempLens < minLens)
-                        //    MainActivity.wideAngleId = physicalCamera
+                        val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
+                        val minLens: Float = MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
+                        if (tempLens < minLens)
+                            MainActivity.wideAngleId = physicalCamera
                     }
 
                     //Determine the closest to "normal" that is not the wide angle lens
@@ -193,10 +193,10 @@ fun initializeCameras(activity: MainActivity) {
                         if (normalLensId == wideAngleId)
                             normalLensId = physicalCamera
 
-                        //val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
-                        //val normalLens: Float = MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
-                        //if (tempLens < normalLens)
-                        //    MainActivity.normalLensId = physicalCamera
+                        val tempLens: Float = MainActivity.cameraParams.get(physicalCamera)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
+                        val normalLens: Float = MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
+                        if (tempLens < normalLens)
+                            MainActivity.normalLensId = physicalCamera
                     }
                 }
 
@@ -241,11 +241,11 @@ fun initializeCameras(activity: MainActivity) {
 fun smallestFocalLength(focalLengths: FloatArray) : Float = focalLengths.min()
     ?: MainActivity.INVALID_FOCAL_LENGTH
 
-fun largestAperture(apertures: FloatArray) : Float = apertures.max()
-    ?: MainActivity.NO_APERTURE
+//fun largestAperture(apertures: FloatArray) : Float = apertures.max()
+//    ?: MainActivity.NO_APERTURE
 
-fun focalLengthMinDeltaFromNormal(focalLengths: FloatArray) : Float
-        = focalLengths.minBy { Math.abs(it - MainActivity.NORMAL_FOCAL_LENGTH) } ?: Float.MAX_VALUE
+//fun focalLengthMinDeltaFromNormal(focalLengths: FloatArray) : Float
+//        = focalLengths.minBy { Math.abs(it - MainActivity.NORMAL_FOCAL_LENGTH) } ?: Float.MAX_VALUE
 
 @SuppressLint("NewApi")
 fun setAutoFlash(activity: Activity, camera: CameraDevice, requestBuilder: CaptureRequest.Builder?) {
@@ -257,10 +257,10 @@ fun setAutoFlash(activity: Activity, camera: CameraDevice, requestBuilder: Captu
         val available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)
         val isFlashSupported = available ?: false
 
-        if (isFlashSupported) {
-            requestBuilder?.set(CaptureRequest.CONTROL_AE_MODE,
-                CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)
-        }
+        //if (isFlashSupported) {
+        //    requestBuilder?.set(CaptureRequest.CONTROL_AE_MODE,
+        //        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)
+       //}
     } catch (e: Exception) {
         //Do nothing
     }
@@ -313,7 +313,7 @@ fun setupImageReader(activity: MainActivity, params: CameraParams) {
     with (params) {
         params.imageReader?.close()
         imageReader = ImageReader.newInstance(maxSize.width, maxSize.height,
-            ImageFormat.JPEG, /*maxImages*/10)
+            ImageFormat.JPEG, /*maxImages*/20)
         imageReader?.setOnImageAvailableListener(
             imageAvailableListener, backgroundHandler)
 

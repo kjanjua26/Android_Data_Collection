@@ -1,10 +1,12 @@
 package com.example.dualcameratets
 
 
+import android.annotation.SuppressLint
 import android.hardware.camera2.CameraDevice
 import androidx.annotation.NonNull
 import com.example.dualcameratets.*
 
+@SuppressLint("NewApi")
 class CameraStateCallback(internal var params: CameraParams, internal var activity: MainActivity) : CameraDevice.StateCallback() {
     override fun onClosed(camera: CameraDevice?) {
         MainActivity.Logd("In CameraStateCallback onClosed. Camera: " + params.id + " is closed.")

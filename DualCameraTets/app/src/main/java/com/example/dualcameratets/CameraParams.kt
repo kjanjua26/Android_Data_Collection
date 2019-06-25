@@ -41,12 +41,12 @@ class CameraParams {
     internal var previewTextureView: AutoFitTextureView? = null
 
     internal var physicalCameras: Set<String> = HashSet<String>()
-    //internal var focalLengths: FloatArray = FloatArray(0)
+    internal var focalLengths: FloatArray = FloatArray(0)
     //internal var apertures: FloatArray = FloatArray(0)
     //internal var distortionModes: IntArray = IntArray(0)
-    //internal var smallestFocalLength: Float = MainActivity.INVALID_FOCAL_LENGTH
-    //internal var minDeltaFromNormal: Float = MainActivity.INVALID_FOCAL_LENGTH
-    //internal var minFocusDistance: Float = MainActivity.FIXED_FOCUS_DISTANCE
+    internal var smallestFocalLength: Float = MainActivity.INVALID_FOCAL_LENGTH
+    internal var minDeltaFromNormal: Float = MainActivity.INVALID_FOCAL_LENGTH
+    internal var minFocusDistance: Float = MainActivity.FIXED_FOCUS_DISTANCE
     //internal var largestAperture: Float = NO_APERTURE
     //internal var effects: IntArray = IntArray(0)
     //internal var hasSepia: Boolean = false
