@@ -4,10 +4,16 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.nfc.Tag
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import java.nio.ByteBuffer
 import com.example.dualcameratets.MainActivity.Companion.Logd
+import org.opencv.core.Core
+import org.opencv.core.Core.DECOMP_SVD
+import org.opencv.core.CvType.CV_64FC1
+import org.opencv.core.CvType.CV_8UC1
+import org.opencv.core.Mat
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -56,26 +62,26 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     }*/
 
     val options = BitmapFactory.Options()
-    //val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
+    val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
     val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, options)
     //Utils.bitmapToMat(tempWideBitmap, wideMat)
 
-    //val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
+    val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
     val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, options)
     //Utils.bitmapToMat(tempNormalBitmap, normalMat)
     //WriteFile(activity, tempWideBitmap,"WideShot")
     //WriteFile(activity, tempNormalBitmap, "NormalShot")
     save(tempNormalBitmap, "NormalShot")
     save(tempWideBitmap, "WideShot")
+    //save(wideBytes, "BytesSaveWide")
 
 
-    /*
     //Convert the Mats to 1-channel greyscale so we can compute depth maps
-    var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
-    Imgproc.cvtColor(normalMat, finalNormalMat, Imgproc.COLOR_BGR2GRAY)
+    //var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
+    //Imgproc.cvtColor(normalMat, finalNormalMat, Imgproc.COLOR_BGR2GRAY)
 
-    var finalWideMat: Mat = Mat(wideMat.rows(), wideMat.cols(), CV_8UC1)
-    Imgproc.cvtColor(wideMat, finalWideMat, Imgproc.COLOR_BGR2GRAY)
+    //var finalWideMat: Mat = Mat(wideMat.rows(), wideMat.cols(), CV_8UC1)
+    //Imgproc.cvtColor(wideMat, finalWideMat, Imgproc.COLOR_BGR2GRAY)
 
     //Get camera matricies
     //If we are >= 28, rectify images to get a good depth map.
@@ -130,6 +136,11 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
         val combinedR: Mat = Mat(3, 3, CV_64FC1)
         val combinedT: Mat = Mat(3, 1, CV_64FC1)
 
+        Logd("Normal Rotation ${poseRotationNormal.dump()}")
+        Logd("Normal Translation ${poseTranslationNormal.dump()}")
+        Logd("Wide Rotation ${poseRotationWide.dump()}")
+        Logd("Wide Translation ${poseTranslationNormal.dump()}")
+
 //        multiply(poseTranslationNormal, poseRotationNormal, combinedT, -1.0)
 //        multiply(poseRotationNormal, poseTranslationNormal, combinedT)
 //        multiply(poseRotationWide, poseTranslationWide, combinedT2, -1.0)
@@ -139,10 +150,10 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
         // T[0] = -1 * innerProduct(row0(R1) * T1)
         // T[1] = -1 * innerProduct(row1(R1) * T1)
         // T[2] = -1 * innerProduct(row2(R1) * T1)
-        combinedT.put(0,0, -1.0 * poseRotationNormal.colRange(0, 1).dot(poseTranslationNormal))
-        combinedT.put(1,0, -1.0 * poseRotationNormal.colRange(1, 2).dot(poseTranslationNormal))
+        combinedT.put(0, 0, -1.0 * poseRotationNormal.colRange(0, 1).dot(poseTranslationNormal))
+        combinedT.put(1, 0, -1.0 * poseRotationNormal.colRange(1, 2).dot(poseTranslationNormal))
 //        combinedT.put(2,0, -1.0 * poseRotationNormal.colRange(2, 3).dot(poseTranslationNormal))
-        combinedT.put(2,0, -1.0 * poseRotationNormal.colRange(2, 3).dot(poseTranslationNormal))
+        combinedT.put(2, 0, -1.0 * poseRotationNormal.colRange(2, 3).dot(poseTranslationNormal))
 
         //To get our combined R, inverse poseRotationWide and multiply
         Core.gemm(poseRotationWide.inv(DECOMP_SVD), poseRotationNormal, 1.0, Mat(), 0.0, combinedR)
@@ -171,6 +182,7 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
                 + combinedT[2, 0].get(0)
         )
 */
+        /*
         //Stereo rectify
         val R1: Mat = Mat(3, 3, CV_64FC1)
         val R2: Mat = Mat(3, 3, CV_64FC1)
@@ -426,10 +438,9 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
 
     return rotateBitmap(finalImage, getRequiredBitmapRotation(activity, true))
     */
-
-    return tempNormalBitmap
+    }
+        return tempNormalBitmap
 }
-/*
 fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     val dArray: DoubleArray = DoubleArray(fArray.size)
 
@@ -440,4 +451,132 @@ fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     }
 
     return dArray
-}*/
+}
+fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
+    mat.put(0,0, *vals)
+/*
+    for (row in 0..rows-1) {
+        for (col in 0..cols-1) {
+            //For some reason, Mat allocation fails for the 5th element sometimes...
+            var temp: DoubleArray? = mat[row, col]
+            if (null == temp) {
+                Logd("Weird, at " + row + "and " + col + " and array is null.")
+                continue
+            }
+            Logd("Checking mat at r: " + row + " and col: " + col + " : " + mat.get(row, col)[0])
+        }
+    }
+*/
+}
+fun rotationMatrixFromQuaternion(quatFloat: FloatArray) : DoubleArray {
+    val quat: DoubleArray = floatArraytoDoubleArray(quatFloat)
+    val rotationMatrix: DoubleArray = DoubleArray(9)
+
+    val x: Int = 0
+    val y: Int = 1
+    val z: Int = 2
+    val w: Int = 3
+
+    //Row 1
+    rotationMatrix[0] = 1 - (2 * quat[y] * quat[y]) - (2 * quat[z] * quat[z])
+    rotationMatrix[1] = (2 * quat[x] * quat[y]) - (2 * quat[z] * quat[w])
+    rotationMatrix[2] = (2 * quat[x] * quat[z]) + (2 * quat[y] * quat[w])
+
+    //Row 2
+    rotationMatrix[3] = (2 * quat[x] * quat[y]) + (2 * quat[z] * quat[w])
+    rotationMatrix[4] = 1 - (2 * quat[x] * quat[x]) - (2 * quat[z] * quat[z])
+    rotationMatrix[5] = (2 * quat[y] * quat[z]) - (2 * quat[x] * quat[w])
+
+    //Row 3
+    rotationMatrix[6] = (2 * quat[x] * quat[z]) - (2 * quat[y] * quat[w])
+    rotationMatrix[7] = (2 * quat[y] * quat[z]) + (2 * quat[x] * quat[w])
+    rotationMatrix[8] = 1 - (2 * quat[x] * quat[x]) - (2 * quat[y] * quat[y])
+
+    //Print
+    Logd("Final Rotation Matrix: "
+            + rotationMatrix[0] + ", "
+            + rotationMatrix[1] + ", "
+            + rotationMatrix[2] + ", "
+            + rotationMatrix[3] + ", "
+            + rotationMatrix[4] + ", "
+            + rotationMatrix[5] + ", "
+            + rotationMatrix[6] + ", "
+            + rotationMatrix[7] + ", "
+            + rotationMatrix[8]
+    )
+
+
+    return rotationMatrix
+}
+
+//https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#LENS_INTRINSIC_CALIBRATION
+//[f_x, f_y, c_x, c_y, s]
+//K = [ f_x,   s, c_x,
+//0, f_y, c_y,
+//0    0,   1 ]
+fun cameraMatrixFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
+    val cal: DoubleArray = floatArraytoDoubleArray(calibrationFloat)
+    val cameraMatrix: DoubleArray = DoubleArray(9)
+
+    val f_x: Int = 0
+    val f_y: Int = 1
+    val c_x: Int = 2
+    val c_y: Int = 3
+    val s: Int = 4
+
+    //Row 1
+    cameraMatrix[0] = cal[f_x]
+    cameraMatrix[1] = cal[s]
+    cameraMatrix[2] = cal[c_x]
+
+    //Row 2
+    cameraMatrix[3] = 0.0
+    cameraMatrix[4] = cal[f_y]
+    cameraMatrix[5] = cal[c_y]
+
+    //Row 3
+    cameraMatrix[6] = 0.0
+    cameraMatrix[7] = 0.0
+    cameraMatrix[8] = 1.0
+
+    //Print
+    Logd("Final Cam Matrix: "
+            + cameraMatrix[0] + ", "
+            + cameraMatrix[1] + ", "
+            + cameraMatrix[2] + ", "
+            + cameraMatrix[3] + ", "
+            + cameraMatrix[4] + ", "
+            + cameraMatrix[5] + ", "
+            + cameraMatrix[6] + ", "
+            + cameraMatrix[7] + ", "
+            + cameraMatrix[8]
+    )
+
+//    printArray(cameraMatrix)
+
+    return cameraMatrix
+}
+
+//The android intrinsic values are swizzled from what OpenCV needs. Output indexs should be: 0,1,3,4,2
+fun cameraDistortionFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
+    val cal: DoubleArray = floatArraytoDoubleArray(calibrationFloat)
+    val cameraDistortion: DoubleArray = DoubleArray(5)
+
+    cameraDistortion[0] = cal[0]
+    cameraDistortion[1] = cal[1]
+    cameraDistortion[2] = cal[3]
+    cameraDistortion[3] = cal[4]
+    cameraDistortion[4] = cal[2]
+
+    //Print
+    Logd("Final Distortion Matrix: "
+            + cameraDistortion[0] + ", "
+            + cameraDistortion[1] + ", "
+            + cameraDistortion[2] + ", "
+            + cameraDistortion[3] + ", "
+            + cameraDistortion[4]
+    )
+
+
+    return cameraDistortion
+}

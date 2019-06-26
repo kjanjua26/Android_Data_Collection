@@ -4,6 +4,7 @@ package com.example.dualcameratets
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Camera
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.ImageReader
@@ -20,6 +21,9 @@ import com.example.dualcameratets.MainActivity.Companion.normalLensId
 import com.example.dualcameratets.MainActivity.Companion.wideAngleId
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
+import android.hardware.camera2.CameraCharacteristics
+
+
 
 
 @SuppressLint("NewApi")
@@ -50,11 +54,16 @@ fun initializeCameras(activity: MainActivity) {
                 characteristics = cameraChars
                 focalLengths = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
                 smallestFocalLength = smallestFocalLength(focalLengths)
-                //minDeltaFromNormal = focalLengthMinDeltaFromNormal(focalLengths)
+                minDeltaFromNormal = focalLengthMinDeltaFromNormal(focalLengths)
+                //maxZoom = cameraChars.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM) * 10
+                maxZoom = cameraChars.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
+                hasOpticalZoom = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
 
-                //apertures = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
-                //largestAperture = largestAperture(apertures)
+                apertures = cameraChars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
+                largestAperture = largestAperture(apertures)
                 minFocusDistance = cameraChars.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
+                MainActivity.Logd("Camera $id has zoom: $maxZoom")
+                MainActivity.Logd("Camera $id has optical zoom: ${Arrays.toString(hasOpticalZoom)}")
 
                 if (Build.VERSION.SDK_INT >= 28) {
                     canSync = cameraChars.get(CameraCharacteristics.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE) == CameraMetadata.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED
@@ -63,10 +72,10 @@ fun initializeCameras(activity: MainActivity) {
                 }
                 //Bokeh calculations
                 if (Build.VERSION.SDK_INT >= 28) {
-                    //lensDistortion = cameraChars.get(CameraCharacteristics.LENS_DISTORTION)
-                    //intrinsicCalibration = cameraChars.get(CameraCharacteristics.LENS_INTRINSIC_CALIBRATION)
-                    //poseRotation = cameraChars.get(CameraCharacteristics.LENS_POSE_ROTATION)
-                    //poseTranslation = cameraChars.get(CameraCharacteristics.LENS_POSE_TRANSLATION)
+                    lensDistortion = cameraChars.get(CameraCharacteristics.LENS_DISTORTION)
+                    intrinsicCalibration = cameraChars.get(CameraCharacteristics.LENS_INTRINSIC_CALIBRATION)
+                    poseRotation = cameraChars.get(CameraCharacteristics.LENS_POSE_ROTATION)
+                    poseTranslation = cameraChars.get(CameraCharacteristics.LENS_POSE_TRANSLATION)
 
                     //distortionModes = cameraChars.get(CameraCharacteristics.DISTORTION_CORRECTION_AVAILABLE_MODES) ?: intArrayOf(CameraMetadata.DISTORTION_CORRECTION_MODE_OFF)
 
@@ -151,7 +160,10 @@ fun initializeCameras(activity: MainActivity) {
             MainActivity.cameraParams.put(cameraId, tempCameraParams)
         } //for all camera devices
 
+        Logd("Camera IDs: " + MainActivity.cameraParams.keys.toString())
         //Default to using the first camera for everything
+        // Just sets both to 0 id at the first.
+        // MainActivity.cameraParams.keys => [0, 1, 2, 3, 4]
         if (!MainActivity.cameraParams.keys.isEmpty()) {
             MainActivity.logicalCamId =   MainActivity.cameraParams.keys.first()
 
@@ -170,6 +182,7 @@ fun initializeCameras(activity: MainActivity) {
         //Determine the first multi-camera logical camera (front or back)
         //Then choose the shortest focal for the wide-angle background camera
         //And closest to 50mm for the "normal lens"
+        // TODO: Adjust camera IDs here.
         for (tempCameraParams in MainActivity.cameraParams) {
             if (tempCameraParams.value.hasMulti) {
                 MainActivity.logicalCamId = tempCameraParams.key
@@ -181,6 +194,7 @@ fun initializeCameras(activity: MainActivity) {
                         val minLens: Float = MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength ?: MainActivity.INVALID_FOCAL_LENGTH
                         if (tempLens < minLens)
                             MainActivity.wideAngleId = physicalCamera
+                        Logd("Wide ID: " + MainActivity.wideAngleId) // => 3
                     }
 
                     //Determine the closest to "normal" that is not the wide angle lens
@@ -197,11 +211,12 @@ fun initializeCameras(activity: MainActivity) {
                         val normalLens: Float = MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal ?: MainActivity.INVALID_FOCAL_LENGTH
                         if (tempLens < normalLens)
                             MainActivity.normalLensId = physicalCamera
+                        Logd("Normal ID: " + MainActivity.normalLensId) // => 2
+
                     }
                 }
-
-                //MainActivity.Logd("Found a multi: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
-                //        + ") and normal: " + MainActivity.normalLensId + " (" + MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal + ")")
+                MainActivity.Logd("Found a multi: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
+                        + ") and normal: " + MainActivity.normalLensId + " (" + MainActivity.cameraParams.get(MainActivity.normalLensId)?.minDeltaFromNormal + ")")
 
                 //If we have a logical cam and two seprate physical cams
                 if (!MainActivity.logicalCamId.equals("")
@@ -241,11 +256,11 @@ fun initializeCameras(activity: MainActivity) {
 fun smallestFocalLength(focalLengths: FloatArray) : Float = focalLengths.min()
     ?: MainActivity.INVALID_FOCAL_LENGTH
 
-//fun largestAperture(apertures: FloatArray) : Float = apertures.max()
-//    ?: MainActivity.NO_APERTURE
+fun largestAperture(apertures: FloatArray) : Float = apertures.max()
+    ?: MainActivity.NO_APERTURE
 
-//fun focalLengthMinDeltaFromNormal(focalLengths: FloatArray) : Float
-//        = focalLengths.minBy { Math.abs(it - MainActivity.NORMAL_FOCAL_LENGTH) } ?: Float.MAX_VALUE
+fun focalLengthMinDeltaFromNormal(focalLengths: FloatArray) : Float
+        = focalLengths.minBy { Math.abs(it - MainActivity.NORMAL_FOCAL_LENGTH) } ?: Float.MAX_VALUE
 
 @SuppressLint("NewApi")
 fun setAutoFlash(activity: Activity, camera: CameraDevice, requestBuilder: CaptureRequest.Builder?) {

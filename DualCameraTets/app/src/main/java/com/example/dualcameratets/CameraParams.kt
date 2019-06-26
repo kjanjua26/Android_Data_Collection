@@ -26,10 +26,12 @@ class CameraParams {
     internal var isFront: Boolean = false
     internal var hasFlash: Boolean = false
     internal var hasMulti: Boolean = false
+    internal var maxZoom: Float = 0f
     internal var hasManualControl: Boolean = false
     internal var isOpen: Boolean = false
     internal var canSync: Boolean = false
     internal var characteristics: CameraCharacteristics? = null
+    internal var hasOpticalZoom: FloatArray = FloatArray(0)
 
     internal var backgroundThread: HandlerThread? = null
     internal var backgroundHandler: Handler? = null
@@ -42,12 +44,12 @@ class CameraParams {
 
     internal var physicalCameras: Set<String> = HashSet<String>()
     internal var focalLengths: FloatArray = FloatArray(0)
-    //internal var apertures: FloatArray = FloatArray(0)
+    internal var apertures: FloatArray = FloatArray(0)
     //internal var distortionModes: IntArray = IntArray(0)
     internal var smallestFocalLength: Float = MainActivity.INVALID_FOCAL_LENGTH
     internal var minDeltaFromNormal: Float = MainActivity.INVALID_FOCAL_LENGTH
     internal var minFocusDistance: Float = MainActivity.FIXED_FOCUS_DISTANCE
-    //internal var largestAperture: Float = NO_APERTURE
+    internal var largestAperture: Float = NO_APERTURE
     //internal var effects: IntArray = IntArray(0)
     //internal var hasSepia: Boolean = false
     //internal var hasMono: Boolean = false
@@ -58,10 +60,10 @@ class CameraParams {
     //internal var bestFaceDetectionMode: Int = 0
 
     //Bokeh calculations
-    //internal var lensDistortion: FloatArray = FloatArray(0)
-    //internal var intrinsicCalibration: FloatArray = FloatArray(0)
-    //internal var poseRotation: FloatArray = FloatArray(0)
-    //internal var poseTranslation: FloatArray = FloatArray(0)
+    internal var lensDistortion: FloatArray = FloatArray(0)
+    internal var intrinsicCalibration: FloatArray = FloatArray(0)
+    internal var poseRotation: FloatArray = FloatArray(0)
+    internal var poseTranslation: FloatArray = FloatArray(0)
     //internal var hasDepth: Boolean = false
 
     internal var previewBuilder: CaptureRequest.Builder? = null

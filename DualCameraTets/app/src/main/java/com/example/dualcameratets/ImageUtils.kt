@@ -20,6 +20,8 @@ import com.example.dualcameratets.MainActivity.Companion.DISPLAY_BITMAP_SCALE
 import com.example.dualcameratets.MainActivity.Companion.Logd
 import com.example.dualcameratets.MainActivity.Companion.twoLens
 import kotlinx.android.synthetic.main.activity_main.*
+import org.opencv.android.BaseLoaderCallback
+import org.opencv.android.LoaderCallbackInterface
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -36,6 +38,7 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
 
         Log.d(MainActivity.LOG_TAG, "ImageReader. Image is available, about to post.")
         val image: Image = reader.acquireNextImage()
+        //val img: Image = reader.acquireLatestImage()
 
         //It might be that we received the image first and we're still waiting for the face calculations
         if (MainActivity.twoLens.isTwoLensShot) {
@@ -593,4 +596,16 @@ fun applyMask(activity: MainActivity, image: Bitmap, mask: Bitmap) : Bitmap {
     WriteFile(activity, maskedImage, "MaskedFull", 100, true)
 
     return maskedImage
+}
+class OpenCVLoaderCallback(val context: Context) : BaseLoaderCallback(context) {
+    override fun onManagerConnected(status: Int) {
+        when (status) {
+            LoaderCallbackInterface.SUCCESS -> {
+                Logd("OpenCV loaded successfully")
+            }
+            else -> {
+                super.onManagerConnected(status);
+            }
+        }
+    }
 }

@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import org.opencv.android.OpenCVLoader
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +30,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         camViewModel = ViewModelProviders.of(this).get(CamViewModel::class.java)
         cameraParams = camViewModel.getCameraParams()
+        OpenCVLoader.initDebug()
+        if (!OpenCVLoader.initDebug()) {
+            Logd("OpenCV failed to load!")
+        } else {
+            Logd("OpenCV loaded successfully!")
+        }
+
         if (checkCameraPermissions())
             initializeCameras(this)
         button.setOnClickListener {
@@ -161,7 +169,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     companion object {
-        //const val NORMAL_FOCAL_LENGTH: Float = 50f
+        const val NORMAL_FOCAL_LENGTH: Float = 50f
         const val GAUSSIAN_BLUR_RADIUS: Float = 25f
         const val BLUR_SCALE_FACTOR: Float = 0.25f
         const val NO_APERTURE: Float = 0f

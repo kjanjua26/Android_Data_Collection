@@ -2,6 +2,7 @@ package com.example.dualcameratets
 
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
@@ -44,6 +45,9 @@ class PreviewSessionStateCallback(val activity: MainActivity, val params: Camera
 
             params.previewBuilder?.set(CaptureRequest.CONTROL_AF_MODE,
                 CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+            // TODO: Set ZOOM Param Here
+            //params.previewBuilder?.set(CaptureRequest.SCALER_CROP_REGION, params.maxZoom)
+
 //            setAutoFlash(activity, cameraCaptureSession.device, params.previewBuilder)
             params.captureSession = cameraCaptureSession
             params.state = STATE_PREVIEW

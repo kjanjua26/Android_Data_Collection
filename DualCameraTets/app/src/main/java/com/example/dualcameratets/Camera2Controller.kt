@@ -26,6 +26,7 @@ import com.example.dualcameratets.MainActivity.Companion.normalLensId
 import com.example.dualcameratets.MainActivity.Companion.twoLens
 import com.example.dualcameratets.MainActivity.Companion.wideAngleId
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.Exception
 import java.util.*
 
 @SuppressLint("NewApi")
@@ -191,9 +192,13 @@ fun closeCamera(params: CameraParams?, activity: MainActivity) {
         return
 
     Logd("closeCamera: " + params.id)
-    params.isOpen = false
-    params.captureSession?.close()
-    params.device?.close()
+    try {
+        params.isOpen = false
+        params.captureSession?.close()
+        params.device?.close()
+    }catch (e: Exception){
+        e.printStackTrace()
+    }
 }
 
 
@@ -286,6 +291,9 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
             params.captureBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
 //            params.captureBuilder?.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
             params.captureBuilder?.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
+            // Set HDR mode.
+            //params.captureBuilder?.set(CaptureRequest.CONTROL_SCENE_MODE, CaptureRequest.CONTROL_SCENE_MODE_HDR)
+
 //            setAutoFlash(activity, camera, params.captureBuilder)
 
             if (params.id.equals(dualCamLogicalId) && twoLens.isTwoLensShot) {
