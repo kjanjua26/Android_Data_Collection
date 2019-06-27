@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.DngCreator
 import android.media.Image
 import android.media.ImageReader
 import android.net.Uri
@@ -38,6 +39,8 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
 
         Log.d(MainActivity.LOG_TAG, "ImageReader. Image is available, about to post.")
         val image: Image = reader.acquireNextImage()
+        val format: Int = image.getFormat()
+
         //val img: Image = reader.acquireLatestImage()
 
         //It might be that we received the image first and we're still waiting for the face calculations
@@ -214,6 +217,9 @@ class ImageSaver internal constructor(private val activity: MainActivity, privat
         */
     }
 
+}
+fun saveRAW(){
+    //val dngCreater: DngCreator = DngCreator(cameraChars, )
 }
 fun save(bytes: ByteArray, tempName: String) {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())

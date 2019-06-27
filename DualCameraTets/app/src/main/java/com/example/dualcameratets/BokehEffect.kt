@@ -3,6 +3,7 @@ package com.example.dualcameratets
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
 import android.nfc.Tag
 import android.os.Build
 import android.util.Log
@@ -21,6 +22,29 @@ import java.io.IOException
 
 @SuppressLint("NewApi")
 fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
+
+    Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
+    Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
+
+    val wideBuffer: ByteBuffer? = twoLens.wideImage!!.planes[0].buffer
+    val wideBytes = ByteArray(wideBuffer!!.remaining())
+    wideBuffer.get(wideBytes)
+
+    val normalBuffer: ByteBuffer? = twoLens.normalImage!!.planes[0].buffer
+    val normalBytes = ByteArray(normalBuffer!!.remaining())
+    normalBuffer.get(normalBytes)
+    val options = BitmapFactory.Options()
+    val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
+    val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, options)
+    //Utils.bitmapToMat(tempWideBitmap, wideMat)
+
+    val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
+    val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, options)
+    //Utils.bitmapToMat(tempNormalBitmap, normalMat)
+    //WriteFile(activity, tempWideBitmap,"WideShot")
+    //WriteFile(activity, tempNormalBitmap, "NormalShot")
+    save(tempNormalBitmap, "NormalShot")
+    save(tempWideBitmap, "WideShot")
     /*
         TODO: HERE IS THAT FACE ERROR.
         IT IS NOT A FACE ERROR BUT A TEMPBITMAP IS RETURNED BECAUSE NOT BOTH SHOTS ARRIVE.
@@ -33,16 +57,16 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     //if (!twoLens.normalShotDone || !twoLens.wideShotDone || (null == twoLens.normalImage)
     //    || (null == twoLens.wideImage))
     //    return tempBitmap //Return empty bitmap
-    Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
-    Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
+    //Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
+    //Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
 
-    val wideBuffer: ByteBuffer? = twoLens.wideImage!!.planes[0].buffer
-    val wideBytes = ByteArray(wideBuffer!!.remaining())
-    wideBuffer.get(wideBytes)
+    //val wideBuffer: ByteBuffer? = twoLens.wideImage!!.planes[0].buffer
+    //val wideBytes = ByteArray(wideBuffer!!.remaining())
+    //wideBuffer.get(wideBytes)
 
-    val normalBuffer: ByteBuffer? = twoLens.normalImage!!.planes[0].buffer
-    val normalBytes = ByteArray(normalBuffer!!.remaining())
-    normalBuffer.get(normalBytes)
+    //val normalBuffer: ByteBuffer? = twoLens.normalImage!!.planes[0].buffer
+    //val normalBytes = ByteArray(normalBuffer!!.remaining())
+    //normalBuffer.get(normalBytes)
 
     /*
     var output: FileOutputStream? = null
@@ -61,18 +85,18 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
         }
     }*/
 
-    val options = BitmapFactory.Options()
-    val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
-    val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, options)
+    //val options = BitmapFactory.Options()
+    //val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
+    //val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, options)
     //Utils.bitmapToMat(tempWideBitmap, wideMat)
 
-    val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
-    val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, options)
+    //val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
+    //val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, options)
     //Utils.bitmapToMat(tempNormalBitmap, normalMat)
     //WriteFile(activity, tempWideBitmap,"WideShot")
     //WriteFile(activity, tempNormalBitmap, "NormalShot")
-    save(tempNormalBitmap, "NormalShot")
-    save(tempWideBitmap, "WideShot")
+    //save(tempNormalBitmap, "NormalShot")
+    //save(tempWideBitmap, "WideShot")
     //save(wideBytes, "BytesSaveWide")
 
 

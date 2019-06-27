@@ -32,6 +32,7 @@ class CameraParams {
     internal var canSync: Boolean = false
     internal var characteristics: CameraCharacteristics? = null
     internal var hasOpticalZoom: FloatArray = FloatArray(0)
+    internal var hasRawCapability: Boolean = false
 
     internal var backgroundThread: HandlerThread? = null
     internal var backgroundHandler: Handler? = null
@@ -40,6 +41,7 @@ class CameraParams {
     internal var shutter: ImageView? = null
     internal var capturedPhoto: ImageView? = null
     internal var imageReader: ImageReader? = null
+    //internal var rawImageReader: ImageReader? = null
     internal var previewTextureView: AutoFitTextureView? = null
 
     internal var physicalCameras: Set<String> = HashSet<String>()
@@ -74,6 +76,7 @@ class CameraParams {
     internal var textureListener: TextureListener? = null
     internal var captureCallback: FocusCaptureSessionCallback? = null
     internal var imageAvailableListener: ImageAvailableListener? = null
+    //internal var rawImageAvailableListener: RawImageAvailableListener? = null
 
     //Camera2 min/max size
     internal var minSize: Size = Size(0, 0)

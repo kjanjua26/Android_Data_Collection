@@ -14,16 +14,21 @@ import androidx.lifecycle.ViewModelProviders
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import org.opencv.android.OpenCVLoader
+import androidx.core.os.HandlerCompat.postDelayed
+
+
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_CAMERA_PERMISSION = 1
     private val REQUEST_FILE_WRITE_PERMISSION = 2
+    var isRunning: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,24 +44,47 @@ class MainActivity : AppCompatActivity() {
 
         if (checkCameraPermissions())
             initializeCameras(this)
+        /*
+            Capture a picture every 5 seconds.
+            TODO: Check if can be done better?
+         */
+        val handler: Handler = Handler()
         button.setOnClickListener {
-            twoLens.reset()
-            twoLens.isTwoLensShot = true
-            MainActivity.cameraParams.get(dualCamLogicalId).let {
-                if (it?.isOpen == true) {
-                    MainActivity.Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
-                    takePicture(this@MainActivity, it)
-                }
+            if (isRunning) {
+                handler.removeCallbacksAndMessages(null)
+                restartActivity()
+            } else {
+                button.text = "Stop"
+                handler.postDelayed(object : Runnable {
+                    override fun run() {
+                        twoLens.reset()
+                        twoLens.isTwoLensShot = true
+                        MainActivity.cameraParams.get(dualCamLogicalId).let {
+                            if (it?.isOpen == true) {
+                                MainActivity.Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
+                                takePicture(this@MainActivity, it)
+                                Toast.makeText(applicationContext, "Captured!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        handler.postDelayed(this, 5000)
+                    }
+                }, 2000)
             }
+            isRunning = !isRunning
         }
     }
+
+    private fun restartActivity() {
+        startActivity(Intent(this@MainActivity, MainActivity::class.java))
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             REQUEST_CAMERA_PERMISSION -> {
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //We now have permission, restart the app
-                    val intent = getIntent()
+                    val intent = intent
                     finish()
                     startActivity(intent)
                 } else {
@@ -67,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //We now have permission, restart the app
-                    val intent = getIntent()
+                    val intent = intent
                     finish()
                     startActivity(intent)
                 } else {
@@ -103,7 +131,7 @@ class MainActivity : AppCompatActivity() {
         if (params.backgroundThread == null) {
             params.backgroundThread = HandlerThread(LOG_TAG).apply {
                 this.start()
-                params.backgroundHandler = Handler(this.getLooper())
+                params.backgroundHandler = Handler(this.looper)
             }
         }
     }
@@ -143,7 +171,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         for (tempCameraParams in cameraParams) {
 //            closeCamera(tempCameraParams.value, this)
 

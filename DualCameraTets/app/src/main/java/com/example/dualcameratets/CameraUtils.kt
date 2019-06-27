@@ -41,6 +41,7 @@ fun initializeCameras(activity: MainActivity) {
                     when (capability) {
                         CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA -> hasMulti = true
                         CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR -> hasManualControl = true
+                        CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW -> hasRawCapability = true
                         //CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT -> hasDepth = true
                     }
                 }
@@ -64,7 +65,7 @@ fun initializeCameras(activity: MainActivity) {
                 minFocusDistance = cameraChars.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)
                 MainActivity.Logd("Camera $id has zoom: $maxZoom")
                 MainActivity.Logd("Camera $id has optical zoom: ${Arrays.toString(hasOpticalZoom)}")
-
+                MainActivity.Logd("Camera $id has RAW Cap: $hasRawCapability")
                 if (Build.VERSION.SDK_INT >= 28) {
                     canSync = cameraChars.get(CameraCharacteristics.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE) == CameraMetadata.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED
                     if (canSync)
@@ -338,7 +339,4 @@ fun setupImageReader(activity: MainActivity, params: CameraParams) {
         params.previewTextureView?.setAspectRatio(minSize.width, minSize.height)
 //        params.previewTextureView?.surfaceTexture?.setDefaultBufferSize(640, 480)
     }
-
-
 }
-
