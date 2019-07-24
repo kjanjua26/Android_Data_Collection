@@ -3,19 +3,19 @@ package com.example.mcmvs
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import com.example.mcmvs.MainActivity.Companion.Logd
 
 class SensorReader(val activity: MainActivity) : SensorEventListener {
-    var sensorID: Int = 0
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         if(sensorEvent!!.sensor.type == Sensor.TYPE_GYROSCOPE) {
-            var sensorID = 4
-            activity.gyroData =
-                sensorID.toString() + ',' + sensorEvent.values[0].toString() + ',' + sensorEvent.values[1].toString() + ',' + sensorEvent.values[2].toString()
+            activity.gyroData = activity.gyroData +
+                "4" + ',' + sensorEvent.values[0].toString() + ',' + sensorEvent.values[1].toString() + ',' + sensorEvent.values[2].toString() + "\n"
+            //Logd("Sensor: " + activity.gyroData)
         }
         else if(sensorEvent.sensor.type == Sensor.TYPE_ACCELEROMETER){
-            var sensorID = 3
-            activity.accData =
-                sensorID.toString() + ',' + sensorEvent.values[0].toString() + ',' + sensorEvent.values[1].toString() + ',' + sensorEvent.values[2].toString()
+            activity.accData = activity.accData +
+                "3" + ',' + sensorEvent.values[0].toString() + ',' + sensorEvent.values[1].toString() + ',' + sensorEvent.values[2].toString() + "\n"
+            //Logd("Sensor: " + activity.accData)
         }
     }
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}

@@ -63,10 +63,9 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     Logd("Sensor: " + activity.gyroData)
     //params.wideBitmaps
     MainActivity.counter += 1
-    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    save(tempWideBitmap, "NormalShot", timeStamp)
-    save(tempNormalBitmap, "WideShot", timeStamp)
-    save(activity, activity.gyroData, activity.accData, timeStamp)
+    save(tempWideBitmap, "NormalShot")
+    save(tempNormalBitmap, "WideShot")
+    save(activity, activity.gyroData, activity.accData)
 
     MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
     MainActivity.normalBitmaps.put(MainActivity.counter.toString(), tempNormalBitmap)
@@ -205,8 +204,8 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     //val rectifiedNormalBitmapColorResize = Bitmap.createScaledBitmap(rectifiedNormalBitmapColor, tempNormalBitmap.width, tempNormalBitmap.height, false)
     //val rectifiedWideBitmapColorResize = Bitmap.createScaledBitmap(rectifiedWideBitmapColor, tempWideBitmap.width, tempWideBitmap.height, false)
 
-    save(rectifiedWideBitmapColor, "NormalShotR", timeStamp)
-    save(rectifiedNormalBitmapColor, "WideShotR", timeStamp)
+    save(rectifiedWideBitmapColor, "NormalShotR")
+    save(rectifiedNormalBitmapColor, "WideShotR")
 
 /*
 

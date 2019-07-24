@@ -26,6 +26,11 @@ import com.github.hiteshsondhi88.libffmpeg.FFmpeg
 import kotlinx.android.synthetic.main.activity_main.*
 import org.opencv.android.OpenCVLoader
 import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,8 +45,6 @@ class MainActivity : AppCompatActivity() {
     var gyroData: String = ""
     var accData: String = ""
     var bufferedWriter: BufferedWriter? = null
-
-
     var isRunning = false
 
     override fun onCreate(savedInstanceState: Bundle?)  {
@@ -54,6 +57,10 @@ class MainActivity : AppCompatActivity() {
         gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         accSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         sensorReader = SensorReader(this)
+        val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
+        if (!dataDir.exists()) {
+            dataDir.mkdir()
+        }
         // check camera permissions.
         OpenCVLoader.initDebug()
         if (!OpenCVLoader.initDebug()) {
@@ -102,6 +109,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         //sensorManager
+                        //bufferedWriter!!.close()
                         handler.postDelayed(this, 1000)
                     }
                 }, 1000)

@@ -57,7 +57,8 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
     }
 }
 
-fun save(bytes: Bitmap, tempName: String, timeStamp: String) {
+fun save(bytes: Bitmap, tempName: String) {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
     if (!dataDir.exists()) {
         dataDir.mkdir()
@@ -75,17 +76,17 @@ fun save(bytes: Bitmap, tempName: String, timeStamp: String) {
     }
 }
 
-fun save(activity: MainActivity, gyroData: String, accData: String, timeStamp: String){
+fun save(activity: MainActivity, gyroData: String, accData: String){
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
     if (!dataDir.exists()) {
         dataDir.mkdir()
     }
-    val fileName = "data_" + timeStamp + ".csv"
+    val fileName = "data" + timeStamp + ".csv"
     val fileDir = File(dataDir.path + File.separator + fileName)
     activity.bufferedWriter = BufferedWriter(FileWriter(fileDir))
-    activity.bufferedWriter!!.write(  gyroData + "\n")
-    activity.bufferedWriter!!.write(accData + "\n")
-    Logd("Sensor: " + timeStamp + "," + gyroData + "\n")
+    activity.bufferedWriter!!.write(gyroData)
+    activity.bufferedWriter!!.write(accData)
     activity.bufferedWriter!!.close()
 }
 
