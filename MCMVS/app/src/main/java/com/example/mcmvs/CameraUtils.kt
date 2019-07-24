@@ -145,6 +145,7 @@ fun initializeCameras(activity: MainActivity) {
         //Determine the first multi-camera logical camera (front or back)
         //Then choose the shortest focal for the wide-angle background camera
         //And closest to 50mm for the "normal lens"
+        // TODO: Do the camera changings here.
         for (tempCameraParams in MainActivity.cameraParams) {
             if (tempCameraParams.value.hasMulti) {
 //                MainActivity.logicalCamId = tempCameraParams.key
@@ -174,6 +175,16 @@ fun initializeCameras(activity: MainActivity) {
 //                            MainActivity.normalLensId = physicalCamera
 //                    }
 //                }
+                /*
+                    Not all cameras support multicamera, so here are the following that support.
+                    wideAngle => 2 (normal camera)
+                    normalLens => 4 (zoomed in camera)
+                    Draws wideAngle (normal cmaera).
+
+                    wideAngle => 2 (normal camera)
+                    normalLens => 3 (wide angle)
+                    Draws wideAngle.
+                 */
                 MainActivity.wideAngleId = 2.toString()
                 MainActivity.normalLensId = 3.toString()
                 MainActivity.Logd("Found a multi: " + MainActivity.logicalCamId + " with wideAngle: " + MainActivity.wideAngleId + "(" + MainActivity.cameraParams.get(MainActivity.wideAngleId)?.smallestFocalLength
@@ -282,7 +293,7 @@ fun getRequiredBitmapRotation(activity: MainActivity, depthMapCorrect: Boolean =
 fun setupImageReader(activity: MainActivity, params: CameraParams) {
     with (params) {
         params.imageReader?.close()
-        imageReader = ImageReader.newInstance(2976, 2976,
+        imageReader = ImageReader.newInstance(960, 720,
             ImageFormat.JPEG, /*maxImages*/20)
         imageReader?.setOnImageAvailableListener(
             imageAvailableListener, backgroundHandler)

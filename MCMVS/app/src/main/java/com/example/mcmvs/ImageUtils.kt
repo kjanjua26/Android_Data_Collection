@@ -18,10 +18,7 @@ import com.example.mcmvs.MainActivity.Companion.DISPLAY_BITMAP_SCALE
 import com.example.mcmvs.MainActivity.Companion.Logd
 import com.example.mcmvs.MainActivity.Companion.twoLens
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -30,7 +27,6 @@ import kotlin.math.roundToInt
 class ImageAvailableListener(private val activity: MainActivity, internal var params: CameraParams) : ImageReader.OnImageAvailableListener {
 
     override fun onImageAvailable(reader: ImageReader) {
-
         Log.d(MainActivity.LOG_TAG, "ImageReader. Image is available, about to post.")
         val image: Image = reader.acquireNextImage()
 
@@ -61,9 +57,8 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
     }
 }
 
-fun save(bytes: Bitmap, tempName: String) {
-    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TwoCameraImagesNew")
+fun save(bytes: Bitmap, tempName: String, timeStamp: String) {
+    val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
     if (!dataDir.exists()) {
         dataDir.mkdir()
     }
@@ -72,13 +67,26 @@ fun save(bytes: Bitmap, tempName: String) {
     try {
         val fileOutputStream = FileOutputStream(fileDir)
         bytes.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
-        //fileOutputStream.write(bytes)
         fileOutputStream.close()
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
     } catch (e: IOException) {
         e.printStackTrace()
     }
+}
+
+fun save(activity: MainActivity, gyroData: String, accData: String, timeStamp: String){
+    val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
+    if (!dataDir.exists()) {
+        dataDir.mkdir()
+    }
+    val fileName = "data_" + timeStamp + ".csv"
+    val fileDir = File(dataDir.path + File.separator + fileName)
+    activity.bufferedWriter = BufferedWriter(FileWriter(fileDir))
+    activity.bufferedWriter!!.write(  gyroData + "\n")
+    activity.bufferedWriter!!.write(accData + "\n")
+    Logd("Sensor: " + timeStamp + "," + gyroData + "\n")
+    activity.bufferedWriter!!.close()
 }
 
 fun setCapturedPhoto(activity: Activity, imageView: ImageView?, bitmap: Bitmap) {
@@ -235,6 +243,22 @@ fun generateTimestamp(): String {
 fun generateTimestamp2Sec(): String {
     val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)
     return sdf.format(Date())
+}
+
+fun horizontalFlip(bitmap: Bitmap) : Bitmap {
+    val matrix = Matrix()
+    matrix.preScale(-1.0f, 1.0f)
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+}
+
+fun rotateBitmap(original: Bitmap, degrees: Float): Bitmap {
+    //If no rotation, no-op
+    if (0f == degrees)
+        return original
+
+    val matrix = Matrix()
+    matrix.postRotate(degrees)
+    return Bitmap.createBitmap(original, 0, 0, original.width, original.height, matrix, true)
 }
 
 /*class ImageSaver internal constructor(private val activity: MainActivity, private val params: CameraParams, private val image: Image?, private val imageView: ImageView?, private val flip: Boolean, private val cameraParams: CameraParams) : Runnable {

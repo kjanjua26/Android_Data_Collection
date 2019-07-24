@@ -7,11 +7,33 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.nio.ByteBuffer
 import android.R.attr.path
 import android.graphics.Bitmap
+import android.hardware.SensorManager
+import android.widget.Toast
+import org.opencv.core.CvType.CV_64FC1
+import org.opencv.core.CvType.CV_8UC1
+import org.opencv.core.Mat
+import org.opencv.calib3d.Calib3d.CALIB_ZERO_DISPARITY
+import org.opencv.calib3d.Calib3d.stereoRectify
+import org.opencv.calib3d.StereoMatcher
+import org.opencv.calib3d.StereoSGBM
+import org.opencv.core.*
+import org.opencv.core.Core.*
+import org.opencv.core.CvType.*
+import org.opencv.core.Rect
+import org.opencv.imgproc.Imgproc
+import org.opencv.imgproc.Imgproc.*
+import org.opencv.android.Utils
+import java.text.SimpleDateFormat
+import java.util.*
 
+/*
+    Since the camera names are inverted, the distortion and intrinsic matrices are also inverted to match the actual camera outputs.
+    Some weird multicam issues urges to preview the wide angle and not the normal, therefore inverted the names.
+    Doesn't draw the preview if you invert the camera IDs in cameraUtils.kt
+ */
+// TODO: Do the gyro and acc callbacks here.
 
 fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
-    val dirTimeStamp = generateTimestamp2Sec()
-
     //Temporary Bitmap for flipping and rotation operations, to ensure correct memory clean-up
     var tempBitmap: Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
 
@@ -31,17 +53,163 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     val normalBytes = ByteArray(normalBuffer!!.remaining())
     normalBuffer.get(normalBytes)
 
-
-    //val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
+    val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
     val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, null)
-    //Utils.bitmapToMat(tempWideBitmap, wideMat)
+    Utils.bitmapToMat(tempWideBitmap, wideMat)
 
-    //val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
+    val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
     val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, null)
-    //Utils.bitmapToMat(tempNormalBitmap, normalMat)
-    save(tempWideBitmap, "NormalShot")
-    save(tempNormalBitmap, "WideShot")
+    Utils.bitmapToMat(tempNormalBitmap, normalMat)
+    Logd("Sensor: " + activity.gyroData)
+    //params.wideBitmaps
+    MainActivity.counter += 1
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+    save(tempWideBitmap, "NormalShot", timeStamp)
+    save(tempNormalBitmap, "WideShot", timeStamp)
+    save(activity, activity.gyroData, activity.accData, timeStamp)
+
+    MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
+    MainActivity.normalBitmaps.put(MainActivity.counter.toString(), tempNormalBitmap)
+
+    var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
+    Imgproc.cvtColor(normalMat, finalNormalMat, Imgproc.COLOR_BGR2GRAY)
+
+    var finalWideMat: Mat = Mat(wideMat.rows(), wideMat.cols(), CV_8UC1)
+    Imgproc.cvtColor(wideMat, finalWideMat, Imgproc.COLOR_BGR2GRAY)
+
+    val camMatrixNormal: Mat = Mat(3, 3, CV_64FC1)
+    val normalIntrinsic = doubleArrayOf(2194.74126636864, 0.0, 1521.31199299266,
+        0.0, 2197.96511039655, 1589.35743671811,
+        0.0, 0.0, 1.0)
+    setMat(camMatrixNormal, 3, 3, normalIntrinsic)
+
+    val camMatrixWide: Mat = Mat(3, 3, CV_64FC1)
+    val wideIntrinsic = doubleArrayOf(2241.54939636141, 0.0, 1515.75552775772,
+        0.0, 2244.61921892845, 1601.02584222253,
+        0.0, 0.0, 1.0)
+    setMat(camMatrixWide, 3, 3, wideIntrinsic)
+
+    var distCoeffNormal: Mat = Mat(5, 1, CV_64FC1)
+    val normalDist = doubleArrayOf(0.00970718088539291,	0.0302182814054848,	-0.0196189363907549, 0.00137731709482448,	1.91652329368791e-05)
+    setMat(distCoeffNormal, 5, 1, normalDist)
+
+    var distCoeffWide: Mat = Mat(5, 1, CV_64FC1)
+    val wideDist = doubleArrayOf(-0.0386022410437852,	0.0356860602389576,	-0.0206818230155171, -0.000730111144107342,	-9.30878336147479e-06)
+    setMat(distCoeffWide, 5, 1, wideDist)
+
+    Logd("Cam Matrix K1 Check: "
+            + camMatrixNormal[0, 0].get(0) + ", "
+            + camMatrixNormal[0, 1].get(0) + ", "
+            + camMatrixNormal[0, 2].get(0) + ", "
+            + camMatrixNormal[1, 0].get(0) + ", "
+            + camMatrixNormal[1, 1].get(0) + ", "
+            + camMatrixNormal[1, 2].get(0) + ", "
+            + camMatrixNormal[2, 0].get(0) + ", "
+            + camMatrixNormal[2, 1].get(0) + ", "
+            + camMatrixNormal[2, 2].get(0)
+    )
+
+    Logd("Cam Matrix K2 Check: "
+            + camMatrixWide[0, 0].get(0) + ", "
+            + camMatrixWide[0, 1].get(0) + ", "
+            + camMatrixWide[0, 2].get(0) + ", "
+            + camMatrixWide[1, 0].get(0) + ", "
+            + camMatrixWide[1, 1].get(0) + ", "
+            + camMatrixWide[1, 2].get(0) + ", "
+            + camMatrixWide[2, 0].get(0) + ", "
+            + camMatrixWide[2, 1].get(0) + ", "
+            + camMatrixWide[2, 2].get(0)
+    )
+    val combinedR: Mat = Mat(3, 3, CV_64FC1)
+    val combinedT: Mat = Mat(3, 1, CV_64FC1)
+
+    val rotationMatrix = doubleArrayOf(0.999997520763306,	0.00193782468335406,	-0.00109695156599813,
+        -0.00194423396541784,	0.999980868338488,	-0.00587221519451645,
+        0.00108555125594218,	0.00587433336639810,	0.999982156733795)
+    setMat(combinedR, 3, 3, rotationMatrix)
+
+    val translationMatrix = doubleArrayOf(-0.0679691746773442, -10.3504444250521,	1.13315247620887)
+    setMat(combinedT, 3, 1, translationMatrix)
+
+
+    //Stereo rectify
+    val R1: Mat = Mat(3, 3, CV_64FC1)
+    val R2: Mat = Mat(3, 3, CV_64FC1)
+    val P1: Mat = Mat(3, 4, CV_64FC1)
+    val P2: Mat = Mat(3, 4, CV_64FC1)
+    val Q: Mat = Mat(4, 4, CV_64FC1)
+
+    val roi1: Rect = Rect()
+    val roi2: Rect = Rect()
+
+    stereoRectify( camMatrixNormal, distCoeffNormal, camMatrixWide, distCoeffWide,
+        finalNormalMat.size(), combinedR, combinedT, R1, R2, P1, P2, Q,
+        CALIB_ZERO_DISPARITY, 0.0, Size(), roi1, roi2)
+
+
+    Logd("R1: " + R1[0,0].get(0) + ", " + R1[0,1].get(0) + ", " + R1[0,2].get(0) + ", " + R1[1,0].get(0) + ", " + R1[1,1].get(0) + ", " + R1[1,2].get(0) + ", " + R1[2,0].get(0) + ", " + R1[2,1].get(0) + ", " + R1[2,2].get(0))
+    Logd("R2: " + R2[0,0].get(0) + ", " + R2[0,1].get(0) + ", " + R2[0,2].get(0) + ", " + R2[1,0].get(0) + ", " + R2[1,1].get(0) + ", " + R2[1,2].get(0) + ", " + R2[2,0].get(0) + ", " + R2[2,1].get(0) + ", " + R2[2,2].get(0))
+    Logd("P1: " + P1[0,0].get(0) + ", " + P1[0,1].get(0) + ", " + P1[0,2].get(0) + ", " + P1[0,3].get(0) + ", " + P1[1,0].get(0) + ", " + P1[1,1].get(0) + ", " + P1[1,2].get(0) + ", " + P1[1,3].get(0) + ", "
+            + P1[2,0].get(0) + ", " + P1[2,1].get(0) + ", " + P1[2,2].get(0) + ", " + P1[2,3].get(0))
+    Logd("P2: " + P2[0,0].get(0) + ", " + P2[0,1].get(0) + ", " + P2[0,2].get(0) + ", " + P2[0,3].get(0) + ", " + P2[1,0].get(0) + ", " + P2[1,1].get(0) + ", " + P2[1,2].get(0) + ", " + P2[1,3].get(0) + ", "
+            + P2[2,0].get(0) + ", " + P2[2,1].get(0) + ", " + P2[2,2].get(0) + ", " + P2[2,3].get(0))
+    Logd("roi1: " + roi1.x+","+roi1.y+","+roi1.width+","+roi1.height)
+    Logd("roi2: " + roi2.x+","+roi2.y+","+roi2.width+","+roi2.height)
+
+    val mapNormal1: Mat = Mat()
+    val mapNormal2: Mat = Mat()
+    val mapWide1: Mat = Mat()
+    val mapWide2: Mat = Mat()
+
+    /*
+        Did the changings here
+     */
+    initUndistortRectifyMap(camMatrixNormal, distCoeffNormal, R1, P1, finalNormalMat.size(), CV_32F, mapNormal1, mapNormal2)
+    initUndistortRectifyMap(camMatrixWide, distCoeffWide, R2, P2, finalWideMat.size(), CV_32F, mapWide1, mapWide2)
+
+    //initUndistortRectifyMap(camMatrixNormal, distCoeffNormal, R1, P1, finalWideMat.size(), CV_32F, mapWide1, mapWide2)
+    //initUndistortRectifyMap(camMatrixWide, distCoeffWide, R2, P2, finalNormalMat.size(), CV_32F, mapNormal1, mapNormal2)
+
+    val rectifiedNormalMat: Mat = Mat()
+    val rectifiedWideMat: Mat = Mat()
+
+    val rectifiedNormalMatColor: Mat = Mat()
+    val rectifiedWideMatColor: Mat = Mat()
+
+    remap(finalNormalMat, rectifiedNormalMat, mapNormal1, mapNormal2, INTER_LINEAR)
+    remap(finalWideMat, rectifiedWideMat, mapWide1, mapWide2, INTER_LINEAR)
+
+    remap(normalMat, rectifiedNormalMatColor, mapNormal1, mapNormal2, INTER_LINEAR)
+    remap(wideMat, rectifiedWideMatColor, mapWide1, mapWide2, INTER_LINEAR)
+
+    val daiMat = Mat()
+    absdiff(rectifiedNormalMat,rectifiedWideMat,daiMat)
+
+    Logd( "Now saving rectified photos to disk.")
+    val rectifiedNormalBitmap: Bitmap = Bitmap.createBitmap(rectifiedNormalMat.cols(), rectifiedNormalMat.rows(), Bitmap.Config.ARGB_8888)
+    Utils.matToBitmap(rectifiedNormalMat, rectifiedNormalBitmap)
+    val rectifiedWideBitmap: Bitmap = Bitmap.createBitmap(rectifiedWideMat.cols(), rectifiedWideMat.rows(), Bitmap.Config.ARGB_8888)
+    Utils.matToBitmap(rectifiedWideMat, rectifiedWideBitmap)
+
+    val rectifiedNormalBitmapColor: Bitmap = Bitmap.createBitmap(rectifiedNormalMatColor.cols(), rectifiedNormalMatColor.rows(), Bitmap.Config.ARGB_8888)
+    Utils.matToBitmap(rectifiedNormalMatColor, rectifiedNormalBitmapColor)
+    val rectifiedWideBitmapColor: Bitmap = Bitmap.createBitmap(rectifiedWideMatColor.cols(), rectifiedWideMatColor.rows(), Bitmap.Config.ARGB_8888)
+    Utils.matToBitmap(rectifiedWideMatColor, rectifiedWideBitmapColor)
+
+    val rectifiedNormalBitmapColorFinal = horizontalFlip(rotateBitmap(rectifiedNormalBitmapColor, 180f))
+    val rectifiedWideBitmapColorFinal = horizontalFlip(rotateBitmap(rectifiedWideBitmapColor, 180f))
+
+    //val rectifiedNormalBitmapColorResize = Bitmap.createScaledBitmap(rectifiedNormalBitmapColorFinal, 280, 280, false)
+    //val rectifiedWideBitmapColorResize = Bitmap.createScaledBitmap(rectifiedWideBitmapColorFinal, 280, 280, false)
+
+    //val rectifiedNormalBitmapColorResize = Bitmap.createScaledBitmap(rectifiedNormalBitmapColor, tempNormalBitmap.width, tempNormalBitmap.height, false)
+    //val rectifiedWideBitmapColorResize = Bitmap.createScaledBitmap(rectifiedWideBitmapColor, tempWideBitmap.width, tempWideBitmap.height, false)
+
+    save(rectifiedWideBitmapColor, "NormalShotR", timeStamp)
+    save(rectifiedNormalBitmapColor, "WideShotR", timeStamp)
+
 /*
+
 //    if (PrefHelper.getIntermediate(activity)) {
 //        activity.runOnUiThread {
 //            activity.imageIntermediate1.setImageBitmap(tempNormalBitmap)
@@ -65,11 +233,11 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
 //    return tempNormalBitmap
 
     //Convert the Mats to 1-channel greyscale so we can compute depth maps
-    var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
-    Imgproc.cvtColor(normalMat, finalNormalMat, Imgproc.COLOR_BGR2GRAY)
+    //var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
+    //Imgproc.cvtColor(normalMat, finalNormalMat, Imgproc.COLOR_BGR2GRAY)
 
-    var finalWideMat: Mat = Mat(wideMat.rows(), wideMat.cols(), CV_8UC1)
-    Imgproc.cvtColor(wideMat, finalWideMat, Imgproc.COLOR_BGR2GRAY)
+    //var finalWideMat: Mat = Mat(wideMat.rows(), wideMat.cols(), CV_8UC1)
+    //Imgproc.cvtColor(wideMat, finalWideMat, Imgproc.COLOR_BGR2GRAY)
 
     //Get camera matrices
     //If we are >= 28, rectify images to get a good depth map.
@@ -371,12 +539,12 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     val disparityBitmap2Final = horizontalFlip(rotateBitmap(disparityBitmap2, 90f))
     val disparityBitmap2Resize = Bitmap.createScaledBitmap(disparityBitmap2Final, 280, 280, false)
 
-    /*if (PrefHelper.getIntermediate(activity)) {
+    if (PrefHelper.getIntermediate(activity)) {
         activity.runOnUiThread {
 //            activity.imageIntermediate1.setImageBitmap(rotateBitmap(disparityBitmap,getRequiredBitmapRotation(activity, true)))
             activity.imageIntermediate4.setImageBitmap(disparityBitmap2Final)
         }
-    }*/
+    }
     if (PrefHelper.getSaveIntermediate(activity)) {
 //        WriteFile(activity, rotateBitmap(disparityBitmap,180f), "DisparityMap",false, dirTimeStamp)
         WriteFile(activity, disparityBitmap2Resize, "DisparityMap2",false, dirTimeStamp)
@@ -497,7 +665,8 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     activity.runOnUiThread {
         activity.captureFinished()
     }
-    return disparityBitmapFilteredFinal*/
+    return disparityBitmapFilteredFinal
+*/
     return tempWideBitmap
 }
 
@@ -631,7 +800,7 @@ fun cameraDistortionFromCalibration(calibrationFloat: FloatArray) : DoubleArray 
     return cameraDistortion
 }
 
-/*fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
+fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
     mat.put(0,0, *vals)
 /*
     for (row in 0..rows-1) {
@@ -646,7 +815,7 @@ fun cameraDistortionFromCalibration(calibrationFloat: FloatArray) : DoubleArray 
         }
     }
 */
-}*/
+}
 
 fun printArray(doubleArray: DoubleArray) {
     Logd("Checking double array Start")

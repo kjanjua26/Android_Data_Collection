@@ -1,5 +1,6 @@
 package com.example.mcmvs
 
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
@@ -17,6 +18,7 @@ import com.example.mcmvs.FocusCaptureSessionCallback.Companion.STATE_UNINITIALIZ
 import com.example.mcmvs.MainActivity.Companion.NO_APERTURE
 import java.util.*
 import java.util.concurrent.Executor
+import kotlin.collections.HashMap
 
 class CameraParams {
     internal var id: String? = null
@@ -71,7 +73,7 @@ class CameraParams {
     internal var captureCallback: FocusCaptureSessionCallback? = null
     internal var imageAvailableListener: ImageAvailableListener? = null
 
-    //Camera2 min/max size
+    //Camera2 min/max sizeaa
     internal var minSize: Size = Size(0, 0)
     internal var maxSize: Size = Size(0, 0)
 
@@ -81,4 +83,7 @@ class CameraParams {
     internal var faceBounds: Rect = Rect(0,0,0,0)
     internal var expandedFaceBounds: Rect = Rect(0,0,0,0)
     internal var grabCutBounds: Rect = Rect(0,0,0,0)
+
+    // TODO: Make two hash maps <String, Bitmap>.
+
 }

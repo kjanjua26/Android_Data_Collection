@@ -41,7 +41,7 @@ class PreviewSessionStateCallback(val activity: MainActivity, val params: Camera
 
             params.previewBuilder?.set(CaptureRequest.CONTROL_AF_MODE,
                 CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-//            setAutoFlash(activity, cameraCaptureSession.device, params.previewBuilder)
+            //params.previewBuilder?.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, [15, 15])
             params.captureSession = cameraCaptureSession
             params.state = STATE_PREVIEW
 

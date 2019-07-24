@@ -2,151 +2,117 @@ package com.example.mcmvs
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.*
 import android.preference.PreferenceManager
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg
 import kotlinx.android.synthetic.main.activity_main.*
+import org.opencv.android.OpenCVLoader
+import java.io.BufferedWriter
 
 class MainActivity : AppCompatActivity() {
 
+    //val ffmpeg: FFmpeg = FFmpeg.getInstance(this) // trying to compile the library here.
+
     private val REQUEST_CAMERA_PERMISSION = 1
     private val REQUEST_FILE_WRITE_PERMISSION = 2
+    var sensorManager: SensorManager? = null
+    var gyroSensor: Sensor? = null
+    var accSensor: Sensor? = null
+    var sensorReader: SensorReader? = null
+    var gyroData: String = ""
+    var accData: String = ""
+    var bufferedWriter: BufferedWriter? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+
+    var isRunning = false
+
+    override fun onCreate(savedInstanceState: Bundle?)  {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         camViewModel = ViewModelProviders.of(this).get(CamViewModel::class.java)
         cameraParams = camViewModel.getCameraParams()
-        sharedPrefs =  PreferenceManager.getDefaultSharedPreferences(this)
-
-        //Load OpenCV for Bokeh effects
-        if (checkCameraPermissions())
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        accSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        sensorReader = SensorReader(this)
+        // check camera permissions.
+        OpenCVLoader.initDebug()
+        if (!OpenCVLoader.initDebug()) {
+            Logd("OpenCV failed to load!")
+        } else {
+            Logd("OpenCV loaded successfully!")
+        }
+        if (checkCameraPermissions()){
             initializeCameras(this)
+            //initializeSensors()
+        }
 
-        //TODO: can this logic be simplified?  4 cases: dual cam, dual cam calibration, dual cam but single shot, single cam/single shot
-        button.setOnClickListener {
+        val handler = Handler()
+        /*button.setOnClickListener {
             prepareUIForCapture()
-
-            /*if (!(camViewModel.getDoDualCamShot().value ?: false)
-                || wideAngleId == normalLensId) {
-                twoLens.reset()
-                twoLens.isTwoLensShot = false
-                singleLens.reset()
-                singleLens.isSingleLensShot = true
-
-                if (!dualCamLogicalId.equals("") && cameraParams.get(dualCamLogicalId)?.isOpen == true) {
-                    MainActivity.Logd("In onClick. Two cameras but taking single photo.")
-                    val logicalParams = cameraParams.get(dualCamLogicalId)
-                    if (null != logicalParams)
-                        takePicture(this, logicalParams)
-
-                } else {
-                    MainActivity.cameraParams.get(wideAngleId).let {
-                        if (it?.isOpen == true) {
-                            MainActivity.Logd("In onClick. Only one camera, taking Photo on wide-angle camera: " + wideAngleId)
-                            twoLens.reset()
-                            twoLens.isTwoLensShot = false
-                            singleLens.reset()
-                            singleLens.isSingleLensShot = true
-                            if (null != it)
-                                takePicture(this, it)
-                        }
-                    }
-                }
-
-            } else {
-                if (PrefHelper.getCalibrationMode(this)) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                    var counter = 0
-                    val NUM_PHOTOS: Long = 30
-                    val DELAY: Long = 5
-                    val timer = object : CountDownTimer(NUM_PHOTOS * DELAY * 1000, DELAY * 1000) {
-                        override fun onFinish() {
-                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                            text_calibration_counter.setText("")
-                        }
-                        override fun onTick(millisUntilFinished: Long) {
-                            counter++
-                            text_calibration_counter.setText("" + counter + "/" + NUM_PHOTOS)
-                            singleLens.reset()
-                            singleLens.isSingleLensShot = false
-                            twoLens.reset()
-                            twoLens.isTwoLensShot = true
-                            MainActivity.cameraParams.get(dualCamLogicalId).let {
-                                if (it?.isOpen == true) {
-                                    MainActivity.Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
-                                    takePicture(this@MainActivity, it)
-                                }
-                            }
-                        }
-                   }.start()
-                } else {
-                    singleLens.reset()
-                    singleLens.isSingleLensShot = false
-                    twoLens.reset()
-                    twoLens.isTwoLensShot = true
-                    MainActivity.cameraParams.get(dualCamLogicalId).let {
-                        if (it?.isOpen == true) {
-                            MainActivity.Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
-                            takePicture(this@MainActivity, it)
-                        }
-                    }
-                }
-            }*/
             twoLens.reset()
             twoLens.isTwoLensShot = true
             MainActivity.cameraParams.get(dualCamLogicalId).let {
                 if (it?.isOpen == true) {
-                    MainActivity.Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
+                    Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
                     takePicture(this@MainActivity, it)
-                    //Toast.makeText(applicationContext, "Captured!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
                 }
             }
+        }*/
+        button.setOnClickListener {
+            prepareUIForCapture()
+            if(isRunning){
+                handler.removeCallbacksAndMessages(null)
+                Logd("Length of wide: " + MainActivity.wideBitmaps.size)
+                Logd("Length of normal: " + MainActivity.normalBitmaps.size)
+                restartActivity()
+            }else{
+                button.text = "Stop"
+                handler.postDelayed(object : Runnable {
+                    override fun run(){
+                        twoLens.reset()
+                        twoLens.isTwoLensShot = true
+                        MainActivity.cameraParams.get(dualCamLogicalId).let {
+                            if (it?.isOpen == true) {
+                                Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
+                                takePicture(this@MainActivity, it)
+                                sensorManager!!.registerListener(sensorReader, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                                sensorManager!!.registerListener(sensorReader, accSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                                Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        //sensorManager
+                        handler.postDelayed(this, 1000)
+                    }
+                }, 1000)
+            }
+            isRunning = !isRunning
         }
+    }
 
-        //Set up mode switch
-        //switch_mode.setOnCheckedChangeListener { switch, isChecked ->
-        //    camViewModel.getDoDualCamShot().value = isChecked
-        //    PrefHelper.setDualCam(this, isChecked)
-        // }
-        //switch_mode.isChecked = PrefHelper.getDualCam(this)
-
-        //val modeToggleObserver = object : Observer<Boolean> {
-        //    override fun onChanged(t: Boolean?) {
-        //        switch_mode.isChecked = t ?: false
-        //    }
-        // }
-        //camViewModel.getDoDualCamShot().observe(this, modeToggleObserver)
-        //Set up show intermediates switch
-        //switch_intermediate.setOnCheckedChangeListener { switch, isChecked ->
-        //    camViewModel.getShowIntermediate().value = isChecked
-        //     PrefHelper.setIntermediates(this, isChecked)
-        //     toggleIntermediateImages(isChecked)
-        //}
-
-        //toggleIntermediateImages(PrefHelper.getIntermediate(this))
-        //switch_intermediate.isChecked = PrefHelper.getIntermediate(this)
-
-        //val intermediateToggleObserver = object : Observer<Boolean> {
-        //    override fun onChanged(t: Boolean?) {
-        //        switch_intermediate.isChecked = t ?: true
-        //    }
-        // }
-        //camViewModel.getShowIntermediate().observe(this, intermediateToggleObserver)
-    }//onCreate
+    private fun restartActivity(){
+        startActivity(Intent(this@MainActivity, MainActivity::class.java))
+    }
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
@@ -157,8 +123,7 @@ class MainActivity : AppCompatActivity() {
                     val intent = getIntent()
                     finish()
                     startActivity(intent)
-                } else {
-                }
+                } else {}
                 return
             }
             REQUEST_FILE_WRITE_PERMISSION -> {
@@ -168,8 +133,7 @@ class MainActivity : AppCompatActivity() {
                     val intent = getIntent()
                     finish()
                     startActivity(intent)
-                } else {
-                }
+                } else {}
                 return
             }
         }
@@ -177,16 +141,13 @@ class MainActivity : AppCompatActivity() {
 
     fun checkCameraPermissions(): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            !== PackageManager.PERMISSION_GRANTED) {
-
-            // No explanation needed; request the permission
+            != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.CAMERA),
                 REQUEST_CAMERA_PERMISSION)
             return false
         } else if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            !== PackageManager.PERMISSION_GRANTED) {
-            // No explanation needed; request the permission
+            != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 REQUEST_FILE_WRITE_PERMISSION)
@@ -195,6 +156,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         return true
+    }
+
+    fun initializeSensors(){
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }
 
     private fun startBackgroundThread(params: CameraParams) {
@@ -206,14 +172,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     @SuppressLint("NewApi")
     private fun stopBackgroundThread(params: CameraParams) {
         params.backgroundThread?.quitSafely()
         try {
             params.backgroundThread?.join()
-//            params.backgroundThread = null
-//            params.backgroundHandler = null
         } catch (e: InterruptedException) {
             Logd( "Interrupted while shutting background thread down: " + e.message)
         }
@@ -226,26 +189,14 @@ class MainActivity : AppCompatActivity() {
         toggleRotationLock(true)
 
         for (tempCameraParams in cameraParams) {
-            //In 28+ we use Executors so don't need the background thread
             if (28 > Build.VERSION.SDK_INT)
                 startBackgroundThread(tempCameraParams.value)
-/*
-            if (tempCameraParams.value.previewTextureView?.isAvailable == true) {
-                camera2OpenCamera(this, tempCameraParams.value)
-            } else {
-                tempCameraParams.value.previewTextureView?.surfaceTextureListener =
-                        TextureListener(tempCameraParams.value, this)
-            }
-*/
         }
     }
 
     override fun onPause() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         for (tempCameraParams in cameraParams) {
-//            closeCamera(tempCameraParams.value, this)
-
-            //In 28+ we use Executors so don't need the background thread
             if (28 > Build.VERSION.SDK_INT)
                 stopBackgroundThread(tempCameraParams.value)
         }
@@ -267,19 +218,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //Prep UI for capture
     fun prepareUIForCapture() {
-        //    buttonTakePhoto.visibility = View.GONE
-        //   progress_take_photo.visibility = View.VISIBLE
+        // TODO: Clear current bitmaps for memory
         toggleRotationLock(true)
-
-        //TODO: clear current bitmaps to free some memory before call
     }
-
-    //Clean-up UI after capture is complete
     fun captureFinished() {
-        //   buttonTakePhoto.visibility = View.VISIBLE
-        //   progress_take_photo.visibility = View.GONE
         toggleRotationLock(false)
     }
 
@@ -297,9 +240,11 @@ class MainActivity : AppCompatActivity() {
         var wideAngleId = ""
         var normalLensId = ""
 
-        lateinit var camViewModel:CamViewModel
+        lateinit var camViewModel: CamViewModel
         lateinit var cameraParams: HashMap<String, CameraParams>
-        lateinit var sharedPrefs: SharedPreferences
+        var counter = 0
+        var wideBitmaps: HashMap<String, Bitmap> = HashMap<String, Bitmap>()
+        var normalBitmaps: HashMap<String, Bitmap> = HashMap<String, Bitmap>()
 
         val twoLens: TwoLensCoordinator = TwoLensCoordinator()
         val ORIENTATIONS = SparseIntArray()
