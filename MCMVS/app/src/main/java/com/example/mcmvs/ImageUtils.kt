@@ -76,7 +76,7 @@ fun save(bytes: Bitmap, tempName: String) {
     }
 }
 
-fun save(activity: MainActivity, gyroData: String, accData: String){
+fun save(activity: MainActivity, gyroData: String, accData: String, wideTimeStamp: String, normalTimeStamp: String){
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
     if (!dataDir.exists()) {
@@ -87,6 +87,8 @@ fun save(activity: MainActivity, gyroData: String, accData: String){
     activity.bufferedWriter = BufferedWriter(FileWriter(fileDir))
     activity.bufferedWriter!!.write(gyroData)
     activity.bufferedWriter!!.write(accData)
+    activity.bufferedWriter!!.write(wideTimeStamp + "\n")
+    activity.bufferedWriter!!.write(normalTimeStamp + "\n")
     activity.bufferedWriter!!.close()
 }
 

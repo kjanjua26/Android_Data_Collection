@@ -105,6 +105,7 @@ class MainActivity : AppCompatActivity() {
                                 takePicture(this@MainActivity, it)
                                 sensorManager!!.registerListener(sensorReader, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL)
                                 sensorManager!!.registerListener(sensorReader, accSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                                //Logd("Image Time: " + twoLens.normalImage!!.timestamp.toString())
                                 Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
                             }
                         }

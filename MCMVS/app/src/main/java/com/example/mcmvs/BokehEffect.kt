@@ -31,8 +31,6 @@ import java.util.*
     Some weird multicam issues urges to preview the wide angle and not the normal, therefore inverted the names.
     Doesn't draw the preview if you invert the camera IDs in cameraUtils.kt
  */
-// TODO: Do the gyro and acc callbacks here.
-
 fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     //Temporary Bitmap for flipping and rotation operations, to ensure correct memory clean-up
     var tempBitmap: Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
@@ -50,6 +48,7 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     wideBuffer.get(wideBytes)
 
     val normalBuffer: ByteBuffer? = twoLens.normalImage!!.planes[0].buffer
+    // Timestamp => twoLens.normalImage!!.timestamp
     val normalBytes = ByteArray(normalBuffer!!.remaining())
     normalBuffer.get(normalBytes)
 
@@ -65,7 +64,7 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     MainActivity.counter += 1
     save(tempWideBitmap, "NormalShot")
     save(tempNormalBitmap, "WideShot")
-    save(activity, activity.gyroData, activity.accData)
+    save(activity, activity.gyroData, activity.accData, (twoLens.normalImage!!.timestamp/1e9).toString(), (twoLens.wideImage!!.timestamp/1e9).toString())
 
     MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
     MainActivity.normalBitmaps.put(MainActivity.counter.toString(), tempNormalBitmap)
