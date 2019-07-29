@@ -1,5 +1,6 @@
 package com.example.mcmvs
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.ImageFormat
@@ -11,7 +12,7 @@ import android.view.Surface
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mcmvs.CameraStateCallback
 import com.example.mcmvs.FocusCaptureSessionCallback
-import com.example.mcmvs.MainActivity.Companion.LOG_TAG
+import com.example.mcmvs.MainActivity.Companion
 import com.example.mcmvs.MainActivity.Companion.Logd
 import com.example.mcmvs.MainActivity.Companion.ORIENTATIONS
 import com.example.mcmvs.MainActivity.Companion.normalLensId
@@ -255,7 +256,7 @@ fun setAutoFlash(activity: Activity, camera: CameraDevice, requestBuilder: Captu
 }
 
 fun getOrientation(params: CameraParams, rotation: Int): Int {
-    Log.d(LOG_TAG, "Orientation: sensor: " + params.characteristics?.get(CameraCharacteristics.SENSOR_ORIENTATION)
+    Log.d("MCMVS", "Orientation: sensor: " + params.characteristics?.get(CameraCharacteristics.SENSOR_ORIENTATION)
             + " and current rotation: " + ORIENTATIONS.get(rotation))
     val sensorRotation: Int = params.characteristics?.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
     return (ORIENTATIONS.get(rotation) + sensorRotation + 270) % 360
@@ -290,11 +291,12 @@ fun getRequiredBitmapRotation(activity: MainActivity, depthMapCorrect: Boolean =
     return neededRotation.toFloat()
 }
 
+@SuppressLint("NewApi")
 fun setupImageReader(activity: MainActivity, params: CameraParams) {
     with (params) {
         params.imageReader?.close()
         imageReader = ImageReader.newInstance(960, 720,
-            ImageFormat.JPEG, /*maxImages*/20)
+            ImageFormat.JPEG, /*maxImages*/2)
         imageReader?.setOnImageAvailableListener(
             imageAvailableListener, backgroundHandler)
     }

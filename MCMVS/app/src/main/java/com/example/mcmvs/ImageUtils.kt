@@ -1,5 +1,6 @@
 package com.example.mcmvs
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -23,11 +24,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
-
+@SuppressLint("NewApi")
 class ImageAvailableListener(private val activity: MainActivity, internal var params: CameraParams) : ImageReader.OnImageAvailableListener {
-
     override fun onImageAvailable(reader: ImageReader) {
-        Log.d(MainActivity.LOG_TAG, "ImageReader. Image is available, about to post.")
+        Log.d("MCMVS", "ImageReader. Image is available, about to post.")
         val image: Image = reader.acquireNextImage()
 
         //It might be that we received the image first and we're still waiting for the face calculations
@@ -45,19 +45,22 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
                 && null != twoLens.wideImage
                 && null != twoLens.normalImage) {
 
-                val finalBitmap: Bitmap = DoBokeh(activity, twoLens)
-                setCapturedPhoto(activity, params.capturedPhoto, finalBitmap)
+                //val finalBitmap: Bitmap =
+                DoBokeh(activity, twoLens)
+                //reader.discardFreeBuffers() // release all the free buffers to help with memory
+                //reader.close()
+                //setCapturedPhoto(activity, params.capturedPhoto, finalBitmap)
 
                 twoLens.normalImage?.close()
                 twoLens.wideImage?.close()
             }
 
         }
-        Log.d(MainActivity.LOG_TAG, "ImageReader. Post has been set.")
+        Log.d("MCMVS", "ImageReader. Post has been set.")
     }
 }
 
-fun save(bytes: Bitmap, tempName: String) {
+fun save(bytes: ByteArray, tempName: String) {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
     if (!dataDir.exists()) {
@@ -67,7 +70,8 @@ fun save(bytes: Bitmap, tempName: String) {
     val fileDir = File(dataDir.path + File.separator + fileName)
     try {
         val fileOutputStream = FileOutputStream(fileDir)
-        bytes.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
+        fileOutputStream.write(bytes) // => For bytes
+        //bytes.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
         fileOutputStream.close()
     } catch (e: FileNotFoundException) {
         e.printStackTrace()

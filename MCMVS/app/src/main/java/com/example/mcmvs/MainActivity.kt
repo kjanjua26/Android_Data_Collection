@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
         }
         if (checkCameraPermissions()){
             initializeCameras(this)
-            //initializeSensors()
         }
 
         val handler = Handler()
@@ -90,8 +89,9 @@ class MainActivity : AppCompatActivity() {
             prepareUIForCapture()
             if(isRunning){
                 handler.removeCallbacksAndMessages(null)
-                Logd("Length of wide: " + MainActivity.wideBitmaps.size)
-                Logd("Length of normal: " + MainActivity.normalBitmaps.size)
+                //Logd("Length of wide: " + MainActivity.wideBitmaps.size)
+                //Logd("Length of normal: " + MainActivity.normalBitmaps.size)
+                //makeVideoFootage()
                 restartActivity()
             }else{
                 button.text = "Stop"
@@ -103,8 +103,8 @@ class MainActivity : AppCompatActivity() {
                             if (it?.isOpen == true) {
                                 Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
                                 takePicture(this@MainActivity, it)
-                                sensorManager!!.registerListener(sensorReader, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL)
-                                sensorManager!!.registerListener(sensorReader, accSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                                //sensorManager!!.registerListener(sensorReader, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL)
+                                //sensorManager!!.registerListener(sensorReader, accSensor, SensorManager.SENSOR_DELAY_NORMAL)
                                 //Logd("Image Time: " + twoLens.normalImage!!.timestamp.toString())
                                 Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
                             }
@@ -121,6 +121,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun restartActivity(){
         startActivity(Intent(this@MainActivity, MainActivity::class.java))
+    }
+
+    fun makeVideoFootage(){
+        // TODO: Add the on-the-fly ffmpeg part here.
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -174,7 +179,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startBackgroundThread(params: CameraParams) {
         if (params.backgroundThread == null) {
-            params.backgroundThread = HandlerThread(LOG_TAG).apply {
+            params.backgroundThread = HandlerThread("MCMVS").apply {
                 this.start()
                 params.backgroundHandler = Handler(this.getLooper())
             }
@@ -229,6 +234,7 @@ class MainActivity : AppCompatActivity() {
 
     fun prepareUIForCapture() {
         // TODO: Clear current bitmaps for memory
+
         toggleRotationLock(true)
     }
     fun captureFinished() {
@@ -251,16 +257,14 @@ class MainActivity : AppCompatActivity() {
 
         lateinit var camViewModel: CamViewModel
         lateinit var cameraParams: HashMap<String, CameraParams>
-        var counter = 0
-        var wideBitmaps: HashMap<String, Bitmap> = HashMap<String, Bitmap>()
-        var normalBitmaps: HashMap<String, Bitmap> = HashMap<String, Bitmap>()
+        //var counter = 0
+        //var wideBitmaps: HashMap<String, Bitmap> = HashMap<String, Bitmap>()
+        //var normalBitmaps: HashMap<String, Bitmap> = HashMap<String, Bitmap>()
 
         val twoLens: TwoLensCoordinator = TwoLensCoordinator()
         val ORIENTATIONS = SparseIntArray()
 
-        const val SAVE_FILE = "saved_photo.jpg"
-
-        val LOG_TAG = "BasicBokeh"
+        //const val SAVE_FILE = "saved_photo.jpg"
 
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)
@@ -270,7 +274,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun Logd(message: String) {
-            Log.d(LOG_TAG, message)
+            Log.d("MCMVS", message)
         }
     }
 }

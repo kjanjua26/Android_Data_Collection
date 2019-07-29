@@ -31,14 +31,30 @@ import java.util.*
     Some weird multicam issues urges to preview the wide angle and not the normal, therefore inverted the names.
     Doesn't draw the preview if you invert the camera IDs in cameraUtils.kt
  */
-fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
+
+// TODO: Stress the capture part of the code, maybe there is some callback lag here.
+/*
+    Some notes:
+
+    1. use .recycle() for the garbage collector to collect the bitmaps, prolly should be used at the end of the code.
+    2. Cannot clear heap of android, but prolly can free the memory after every capture.
+    3. Rectification causes some lags.
+    4. After about 3 mins of continuous capture, there is lag in the camera => Maybe the bitmaps are causing this?
+ */
+
+fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     //Temporary Bitmap for flipping and rotation operations, to ensure correct memory clean-up
-    var tempBitmap: Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+    //var tempBitmap: Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+
+    activity.sensorManager!!.registerListener(activity.sensorReader, activity.gyroSensor, SensorManager.SENSOR_DELAY_NORMAL)
+    activity.sensorManager!!.registerListener(activity.sensorReader, activity.accSensor, SensorManager.SENSOR_DELAY_NORMAL)
 
     //We need both shots to be done and both images in order to proceed
-    if (!twoLens.normalShotDone || !twoLens.wideShotDone || (null == twoLens.normalImage)
-        || (null == twoLens.wideImage))
-        return tempBitmap //Return empty bitmap
+    //if (!twoLens.normalShotDone || !twoLens.wideShotDone || (null == twoLens.normalImage)
+    //    || (null == twoLens.wideImage))
+    //    return tempBitmap //Return empty bitmap
+
+    //tempBitmap.recycle()
 
     Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
     Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
@@ -52,21 +68,29 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     val normalBytes = ByteArray(normalBuffer!!.remaining())
     normalBuffer.get(normalBytes)
 
-    val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
-    val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, null)
-    Utils.bitmapToMat(tempWideBitmap, wideMat)
+    //val wideMat: Mat = Mat(twoLens.wideImage!!.height, twoLens.wideImage!!.width, CV_8UC1)
+    //val tempWideBitmap = BitmapFactory.decodeByteArray(wideBytes, 0, wideBytes.size, null)
+    //Utils.bitmapToMat(tempWideBitmap, wideMat)
 
-    val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
-    val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, null)
-    Utils.bitmapToMat(tempNormalBitmap, normalMat)
-    Logd("Sensor: " + activity.gyroData)
-    //params.wideBitmaps
-    MainActivity.counter += 1
-    save(tempWideBitmap, "NormalShot")
-    save(tempNormalBitmap, "WideShot")
+    //val normalMat: Mat = Mat(twoLens.normalImage!!.height, twoLens.normalImage!!.width, CV_8UC1)
+    //val tempNormalBitmap = BitmapFactory.decodeByteArray(normalBytes, 0, normalBytes.size, null)
+    //Utils.bitmapToMat(tempNormalBitmap, normalMat)
+    //Logd("Sensor: " + activity.gyroData)
+
+    //MainActivity.counter += 1
+    //save(tempWideBitmap, "NormalShot")
+    //save(tempNormalBitmap, "WideShot")
+    save(wideBytes, "NormalShot")
+    save(normalBytes, "WideShot")
     save(activity, activity.gyroData, activity.accData, (twoLens.normalImage!!.timestamp/1e9).toString(), (twoLens.wideImage!!.timestamp/1e9).toString())
 
-    MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
+
+    // Do some clearing here to save some memory
+    normalBuffer.clear()
+    wideBuffer.clear()
+
+
+    /*MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
     MainActivity.normalBitmaps.put(MainActivity.counter.toString(), tempNormalBitmap)
 
     var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
@@ -665,7 +689,8 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) : Bitmap {
     }
     return disparityBitmapFilteredFinal
 */
-    return tempWideBitmap
+    return tempWideBitmap*/
+    //return tempWideBitmap
 }
 
 fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {

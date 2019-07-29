@@ -276,10 +276,6 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
 
     try {
         Logd("In captureStillPicture.")
-        val captureList = ArrayList<CaptureRequest>()
-        for (i in 0 until 10){
-            captureList.add(params.previewBuilder?.build()!!)
-        }
         val camera = params.captureSession?.getDevice()
 
         if (null != camera) {
@@ -304,7 +300,7 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
                 params.captureBuilder?.addTarget(wideParams.imageReader?.surface!!)
 
             }
-            params.captureBuilder?.set(CaptureRequest.JPEG_QUALITY, 90)
+            params.captureBuilder?.set(CaptureRequest.JPEG_QUALITY, 50)
             // Orientation
             val rotation = activity.getWindowManager().getDefaultDisplay().getRotation()
             var capturedImageRotation = getOrientation(params, rotation)
@@ -316,8 +312,8 @@ fun captureStillPicture(activity: MainActivity, params: CameraParams) {
             } catch (e: CameraAccessException) {
                 e.printStackTrace()
             }
-            val normalParams: CameraParams? = MainActivity.cameraParams.get(normalLensId)
-            val wideParams: CameraParams? = MainActivity.cameraParams.get(wideAngleId)
+            //val normalParams: CameraParams? = MainActivity.cameraParams.get(normalLensId)
+            //val wideParams: CameraParams? = MainActivity.cameraParams.get(wideAngleId)
 
             //params.captureSession?.captureBurst(captureList, StillCaptureSessionCallback(activity, params), params.backgroundHandler)
             //params.captureBuilder?.removeTarget(normalParams?.imageReader?.surface!!)

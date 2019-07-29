@@ -35,15 +35,15 @@ class CameraParams {
     internal var backgroundHandler: Handler? = null
     internal var backgroundExecutor: Executor = AsyncTask.THREAD_POOL_EXECUTOR
 
-    internal var shutter: ImageView? = null
-    internal var capturedPhoto: ImageView? = null
+    //internal var shutter: ImageView? = null
+    //internal var capturedPhoto: ImageView? = null
     internal var imageReader: ImageReader? = null
     internal var previewTextureView: AutoFitTextureView? = null
 
     internal var physicalCameras: Set<String> = HashSet<String>()
     internal var focalLengths: FloatArray = FloatArray(0)
     internal var apertures: FloatArray = FloatArray(0)
-    internal var distortionModes: IntArray = IntArray(0)
+    //internal var distortionModes: IntArray = IntArray(0)
     internal var smallestFocalLength: Float = MainActivity.INVALID_FOCAL_LENGTH
     internal var minDeltaFromNormal: Float = MainActivity.INVALID_FOCAL_LENGTH
     internal var minFocusDistance: Float = MainActivity.FIXED_FOCUS_DISTANCE
@@ -55,7 +55,7 @@ class CameraParams {
 
     internal var isLogicalBackedByPhysical: Boolean = false
 
-    internal var bestFaceDetectionMode: Int = 0
+    //internal var bestFaceDetectionMode: Int = 0
 
     //Bokeh calculations
     internal var lensDistortion: FloatArray = FloatArray(0)
@@ -69,7 +69,7 @@ class CameraParams {
 
     internal var captureSession: CameraCaptureSession? = null
     internal var cameraCallback: CameraStateCallback? = null
-    internal var textureListener: TextureListener? = null
+    //internal var textureListener: TextureListener? = null
     internal var captureCallback: FocusCaptureSessionCallback? = null
     internal var imageAvailableListener: ImageAvailableListener? = null
 
@@ -82,7 +82,7 @@ class CameraParams {
     internal var hasFace: Boolean = false
     internal var faceBounds: Rect = Rect(0,0,0,0)
     internal var expandedFaceBounds: Rect = Rect(0,0,0,0)
-    internal var grabCutBounds: Rect = Rect(0,0,0,0)
+    //internal var grabCutBounds: Rect = Rect(0,0,0,0)
 
     // TODO: Make two hash maps <String, Bitmap>.
 

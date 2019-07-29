@@ -146,8 +146,9 @@ class StillCaptureSessionCallback(val activity: MainActivity, val params: Camera
                 && null != twoLens.wideImage
                 && null != twoLens.normalImage) {
 
-                val finalBitmap: Bitmap = DoBokeh(activity, twoLens)
-                setCapturedPhoto(activity, params.capturedPhoto, finalBitmap)
+                //val finalBitmap: Bitmap =
+                DoBokeh(activity, twoLens)
+                //setCapturedPhoto(activity, params.capturedPhoto, finalBitmap)
 
                 twoLens.normalImage?.close()
                 twoLens.wideImage?.close()
