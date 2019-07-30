@@ -57,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         accSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         sensorReader = SensorReader(this)
+        var runnerThread = Thread()
+
         val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
         if (!dataDir.exists()) {
             dataDir.mkdir()
@@ -71,21 +73,69 @@ class MainActivity : AppCompatActivity() {
         if (checkCameraPermissions()){
             initializeCameras(this)
         }
-
-        val handler = Handler()
+        /*
+            Using a thread based approach.
+         */
+        val myThread = Thread(Runnable {
+            while (!Thread.interrupted())
+                try {
+                    Thread.sleep(1000)
+                    runOnUiThread {
+                        twoLens.reset()
+                        twoLens.isTwoLensShot = true
+                        MainActivity.cameraParams.get(dualCamLogicalId).let {
+                            if (it?.isOpen == true) {
+                                Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
+                                takePicture(this@MainActivity, it)
+                                Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+        })
+        button.setOnClickListener {
+            prepareUIForCapture()
+            if(isRunning){
+                myThread.interrupt()
+                restartActivity()
+            }else{
+                button.text = "Stop"
+                myThread.start()
+                isRunning = !isRunning
+            }
+        }
         /*button.setOnClickListener {
             prepareUIForCapture()
-            twoLens.reset()
-            twoLens.isTwoLensShot = true
-            MainActivity.cameraParams.get(dualCamLogicalId).let {
-                if (it?.isOpen == true) {
-                    Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
-                    takePicture(this@MainActivity, it)
-                    Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
-                }
+            if(isRunning){
+                Thread.interrupted()
+                restartActivity()
+            }else {
+                button.text = "Stop"
+                Thread(Runnable {
+                    while (!Thread.interrupted())
+                        try {
+                            Thread.sleep(1000)
+                            runOnUiThread {
+                                twoLens.reset()
+                                twoLens.isTwoLensShot = true
+                                MainActivity.cameraParams.get(dualCamLogicalId).let {
+                                    if (it?.isOpen == true) {
+                                        Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
+                                        takePicture(this@MainActivity, it)
+                                        Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        } catch (e: InterruptedException) {
+                            e.printStackTrace()
+                        }
+                }).start() // the while thread will start in BG thread
+                isRunning = !isRunning
             }
         }*/
-        button.setOnClickListener {
+        /*button.setOnClickListener {
             prepareUIForCapture()
             if(isRunning){
                 handler.removeCallbacksAndMessages(null)
@@ -116,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                 }, 1000)
             }
             isRunning = !isRunning
-        }
+        }*/
     }
 
     private fun restartActivity(){
@@ -125,7 +175,6 @@ class MainActivity : AppCompatActivity() {
 
     fun makeVideoFootage(){
         // TODO: Add the on-the-fly ffmpeg part here.
-
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,

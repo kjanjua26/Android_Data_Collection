@@ -189,7 +189,11 @@ fun closeCamera(params: CameraParams?, activity: MainActivity) {
 
     Logd("closeCamera: " + params.id)
     params.isOpen = false
-    params.captureSession?.close()
+    try {
+        params.captureSession?.close()
+    }catch (e: CameraAccessException){
+        e.printStackTrace()
+    }
     params.device?.close()
 }
 

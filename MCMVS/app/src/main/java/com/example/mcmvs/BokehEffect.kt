@@ -56,8 +56,8 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
 
     //tempBitmap.recycle()
 
-    Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
-    Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
+    //Logd("Normal image timestamp: " + twoLens.normalImage?.timestamp)
+    //Logd("Wide image timestamp: " + twoLens.wideImage?.timestamp)
 
     val wideBuffer: ByteBuffer? = twoLens.wideImage!!.planes[0].buffer
     val wideBytes = ByteArray(wideBuffer!!.remaining())
@@ -80,6 +80,10 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     //MainActivity.counter += 1
     //save(tempWideBitmap, "NormalShot")
     //save(tempNormalBitmap, "WideShot")
+    //Logd("Translation Pose: " +)
+    Logd("Pose Rot Normal: " + Arrays.toString(twoLens.normalParams.poseRotation))
+    Logd("Pose Rot Wide: " + Arrays.toString(twoLens.wideParams.poseRotation))
+
     save(wideBytes, "NormalShot")
     save(normalBytes, "WideShot")
     save(activity, activity.gyroData, activity.accData, (twoLens.normalImage!!.timestamp/1e9).toString(), (twoLens.wideImage!!.timestamp/1e9).toString())
@@ -90,10 +94,10 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     wideBuffer.clear()
 
 
-    /*MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
-    MainActivity.normalBitmaps.put(MainActivity.counter.toString(), tempNormalBitmap)
+    //MainActivity.wideBitmaps.put(MainActivity.counter.toString(), tempWideBitmap)
+    //MainActivity.normalBitmaps.put(MainActivity.counter.toString(), tempNormalBitmap)
 
-    var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
+    /*var finalNormalMat: Mat = Mat(normalMat.rows(), normalMat.cols(), CV_8UC1)
     Imgproc.cvtColor(normalMat, finalNormalMat, Imgproc.COLOR_BGR2GRAY)
 
     var finalWideMat: Mat = Mat(wideMat.rows(), wideMat.cols(), CV_8UC1)
@@ -218,8 +222,8 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     val rectifiedWideBitmapColor: Bitmap = Bitmap.createBitmap(rectifiedWideMatColor.cols(), rectifiedWideMatColor.rows(), Bitmap.Config.ARGB_8888)
     Utils.matToBitmap(rectifiedWideMatColor, rectifiedWideBitmapColor)
 
-    val rectifiedNormalBitmapColorFinal = horizontalFlip(rotateBitmap(rectifiedNormalBitmapColor, 180f))
-    val rectifiedWideBitmapColorFinal = horizontalFlip(rotateBitmap(rectifiedWideBitmapColor, 180f))
+    //val rectifiedNormalBitmapColorFinal = horizontalFlip(rotateBitmap(rectifiedNormalBitmapColor, 180f))
+    //val rectifiedWideBitmapColorFinal = horizontalFlip(rotateBitmap(rectifiedWideBitmapColor, 180f))
 
     //val rectifiedNormalBitmapColorResize = Bitmap.createScaledBitmap(rectifiedNormalBitmapColorFinal, 280, 280, false)
     //val rectifiedWideBitmapColorResize = Bitmap.createScaledBitmap(rectifiedWideBitmapColorFinal, 280, 280, false)
@@ -227,8 +231,9 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     //val rectifiedNormalBitmapColorResize = Bitmap.createScaledBitmap(rectifiedNormalBitmapColor, tempNormalBitmap.width, tempNormalBitmap.height, false)
     //val rectifiedWideBitmapColorResize = Bitmap.createScaledBitmap(rectifiedWideBitmapColor, tempWideBitmap.width, tempWideBitmap.height, false)
 
-    save(rectifiedWideBitmapColor, "NormalShotR")
-    save(rectifiedNormalBitmapColor, "WideShotR")
+    //save(rectifiedWideBitmapColor, "NormalShotR")
+    //save(rectifiedNormalBitmapColor, "WideShotR")
+
 
 /*
 
@@ -689,11 +694,12 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     }
     return disparityBitmapFilteredFinal
 */
-    return tempWideBitmap*/
     //return tempWideBitmap
+    //return tempWideBitmap
+    */
 }
 
-fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
+/*fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     val dArray: DoubleArray = DoubleArray(fArray.size)
 
     var output = ""
@@ -703,14 +709,14 @@ fun floatArraytoDoubleArray(fArray: FloatArray) : DoubleArray {
     }
 
     return dArray
-}
+}*/
 
 //From https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#LENS_POSE_ROTATION
 //For (x,y,x,w)
 //R = [ 1 - 2y^2 - 2z^2,       2xy - 2zw,       2xz + 2yw,
 //2xy + 2zw, 1 - 2x^2 - 2z^2,       2yz - 2xw,
 //2xz - 2yw,       2yz + 2xw, 1 - 2x^2 - 2y^2 ]
-fun rotationMatrixFromQuaternion(quatFloat: FloatArray) : DoubleArray {
+/*fun rotationMatrixFromQuaternion(quatFloat: FloatArray) : DoubleArray {
     val quat: DoubleArray = floatArraytoDoubleArray(quatFloat)
     val rotationMatrix: DoubleArray = DoubleArray(9)
 
@@ -749,14 +755,14 @@ fun rotationMatrixFromQuaternion(quatFloat: FloatArray) : DoubleArray {
 
 
     return rotationMatrix
-}
+}*/
 
 //https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#LENS_INTRINSIC_CALIBRATION
 //[f_x, f_y, c_x, c_y, s]
 //K = [ f_x,   s, c_x,
 //0, f_y, c_y,
 //0    0,   1 ]
-fun cameraMatrixFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
+/*fun cameraMatrixFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
     val cal: DoubleArray = floatArraytoDoubleArray(calibrationFloat)
     val cameraMatrix: DoubleArray = DoubleArray(9)
 
@@ -797,10 +803,10 @@ fun cameraMatrixFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
 //    printArray(cameraMatrix)
 
     return cameraMatrix
-}
+}*/
 
 //The android intrinsic values are swizzled from what OpenCV needs. Output indexs should be: 0,1,3,4,2
-fun cameraDistortionFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
+/*fun cameraDistortionFromCalibration(calibrationFloat: FloatArray) : DoubleArray {
     val cal: DoubleArray = floatArraytoDoubleArray(calibrationFloat)
     val cameraDistortion: DoubleArray = DoubleArray(5)
 
@@ -821,7 +827,7 @@ fun cameraDistortionFromCalibration(calibrationFloat: FloatArray) : DoubleArray 
 
 
     return cameraDistortion
-}
+}*/
 
 fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
     mat.put(0,0, *vals)
@@ -840,9 +846,9 @@ fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
 */
 }
 
-fun printArray(doubleArray: DoubleArray) {
+/*fun printArray(doubleArray: DoubleArray) {
     Logd("Checking double array Start")
     for (double in doubleArray)
         Logd("element: " + double)
     Logd("Checking double array End")
-}
+}*/

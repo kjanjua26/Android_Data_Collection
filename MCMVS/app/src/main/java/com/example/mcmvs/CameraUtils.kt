@@ -262,7 +262,7 @@ fun getOrientation(params: CameraParams, rotation: Int): Int {
     return (ORIENTATIONS.get(rotation) + sensorRotation + 270) % 360
 }
 
-fun getRequiredBitmapRotation(activity: MainActivity, depthMapCorrect: Boolean = false): Float {
+/*fun getRequiredBitmapRotation(activity: MainActivity, depthMapCorrect: Boolean = false): Float {
     val rotation: Int = activity.windowManager.defaultDisplay.rotation
 
     var neededRotation = 0
@@ -289,7 +289,7 @@ fun getRequiredBitmapRotation(activity: MainActivity, depthMapCorrect: Boolean =
     Logd("So exciting, need rotation: " + neededRotation)
 
     return neededRotation.toFloat()
-}
+}*/
 
 @SuppressLint("NewApi")
 fun setupImageReader(activity: MainActivity, params: CameraParams) {

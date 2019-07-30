@@ -96,12 +96,12 @@ fun save(activity: MainActivity, gyroData: String, accData: String, wideTimeStam
     activity.bufferedWriter!!.close()
 }
 
-fun setCapturedPhoto(activity: Activity, imageView: ImageView?, bitmap: Bitmap) {
+/*fun setCapturedPhoto(activity: Activity, imageView: ImageView?, bitmap: Bitmap) {
     activity.runOnUiThread { imageView?.setImageBitmap(bitmap) }
-}
+}*/
 
 
-fun WriteFile(activity: MainActivity, bitmap: Bitmap, name: String, quality: Int = 100, writePNG: Boolean = false, dirTimeStamp: String = "") {
+/*fun WriteFile(activity: MainActivity, bitmap: Bitmap, name: String, quality: Int = 100, writePNG: Boolean = false, dirTimeStamp: String = "") {
     val PHOTOS_DIR: String = "BasicBokeh/"+dirTimeStamp
 
     var jpgFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
@@ -153,9 +153,9 @@ fun WriteFile(activity: MainActivity, bitmap: Bitmap, name: String, quality: Int
     }
 
     Logd("WriteFile: Completed.")
-}
+}*/
 
-fun getFileHandle (activity: MainActivity, name: String, withTimestamp: Boolean, dirTimeStamp: String) : File {
+/*fun getFileHandle (activity: MainActivity, name: String, withTimestamp: Boolean, dirTimeStamp: String) : File {
 //    val PHOTOS_DIR: String = "BasicBokeh"
 
     val PHOTOS_DIR: String = "BasicBokeh/"+ dirTimeStamp
@@ -182,9 +182,9 @@ fun getFileHandle (activity: MainActivity, name: String, withTimestamp: Boolean,
     }
 
     return jpgFile
-}
+}*/
 
-fun WriteFile(activity: MainActivity, bitmap: Bitmap, name: String, withTimestamp: Boolean = false, dirTimeStamp: String = "") {
+/*fun WriteFile(activity: MainActivity, bitmap: Bitmap, name: String, withTimestamp: Boolean = false, dirTimeStamp: String = "") {
 
     val jpgFile = getFileHandle(activity, name, withTimestamp, dirTimeStamp)
 
@@ -211,9 +211,9 @@ fun WriteFile(activity: MainActivity, bitmap: Bitmap, name: String, withTimestam
     }
 
     Logd("WriteFile: Completed.")
-}
+}*/
 
-fun WriteFile(activity: MainActivity, bytes: ByteArray, name: String, withTimestamp: Boolean = false, dirTimeStamp: String = "") {
+/*fun WriteFile(activity: MainActivity, bytes: ByteArray, name: String, withTimestamp: Boolean = false, dirTimeStamp: String = "") {
 
     val jpgFile = getFileHandle(activity, name, withTimestamp, dirTimeStamp)
 
@@ -240,25 +240,25 @@ fun WriteFile(activity: MainActivity, bytes: ByteArray, name: String, withTimest
     }
 
     Logd("WriteFile: Completed.")
-}
+}*/
 
 fun generateTimestamp(): String {
     val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
     return sdf.format(Date())
 }
 
-fun generateTimestamp2Sec(): String {
+/*fun generateTimestamp2Sec(): String {
     val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)
     return sdf.format(Date())
-}
+}*/
 
-fun horizontalFlip(bitmap: Bitmap) : Bitmap {
+/*fun horizontalFlip(bitmap: Bitmap) : Bitmap {
     val matrix = Matrix()
     matrix.preScale(-1.0f, 1.0f)
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-}
+}*/
 
-fun rotateBitmap(original: Bitmap, degrees: Float): Bitmap {
+/*fun rotateBitmap(original: Bitmap, degrees: Float): Bitmap {
     //If no rotation, no-op
     if (0f == degrees)
         return original
@@ -266,7 +266,7 @@ fun rotateBitmap(original: Bitmap, degrees: Float): Bitmap {
     val matrix = Matrix()
     matrix.postRotate(degrees)
     return Bitmap.createBitmap(original, 0, 0, original.width, original.height, matrix, true)
-}
+}*/
 
 /*class ImageSaver internal constructor(private val activity: MainActivity, private val params: CameraParams, private val image: Image?, private val imageView: ImageView?, private val flip: Boolean, private val cameraParams: CameraParams) : Runnable {
 
