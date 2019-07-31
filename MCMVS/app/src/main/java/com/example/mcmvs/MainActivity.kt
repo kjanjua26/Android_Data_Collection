@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     var accData: String = ""
     var bufferedWriter: BufferedWriter? = null
     var isRunning = false
+    var stopThread = false
 
     override fun onCreate(savedInstanceState: Bundle?)  {
         super.onCreate(savedInstanceState)
@@ -53,6 +54,9 @@ class MainActivity : AppCompatActivity() {
 
         camViewModel = ViewModelProviders.of(this).get(CamViewModel::class.java)
         cameraParams = camViewModel.getCameraParams()
+        /*
+            Sensors here.
+         */
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         accSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -75,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         }
         /*
             Using a thread based approach.
+            https://stackoverflow.com/questions/11687011/run-loop-every-second-java
          */
         val myThread = Thread(Runnable {
             while (!Thread.interrupted())
@@ -83,6 +88,9 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         twoLens.reset()
                         twoLens.isTwoLensShot = true
+                        if(stopThread){
+                            return@runOnUiThread
+                        }
                         MainActivity.cameraParams.get(dualCamLogicalId).let {
                             if (it?.isOpen == true) {
                                 Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
@@ -99,10 +107,12 @@ class MainActivity : AppCompatActivity() {
             prepareUIForCapture()
             if(isRunning){
                 myThread.interrupt()
+                stopThread = true
                 restartActivity()
             }else{
                 button.text = "Stop"
                 myThread.start()
+                stopThread = false
                 isRunning = !isRunning
             }
         }
