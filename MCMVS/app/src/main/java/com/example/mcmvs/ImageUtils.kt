@@ -17,6 +17,7 @@ import android.widget.Toast
 import com.example.mcmvs.MainActivity.Companion.BLUR_SCALE_FACTOR
 import com.example.mcmvs.MainActivity.Companion.DISPLAY_BITMAP_SCALE
 import com.example.mcmvs.MainActivity.Companion.Logd
+import com.example.mcmvs.MainActivity.Companion.sceneCounter
 import com.example.mcmvs.MainActivity.Companion.twoLens
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.*
@@ -62,12 +63,16 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
 
 fun save(bytes: ByteArray, tempName: String) {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
-    if (!dataDir.exists()) {
-        dataDir.mkdir()
+
+    var gpath: String = Environment.getExternalStorageDirectory().absolutePath
+    var spath = "Download/DataCollection/scene$sceneCounter"
+    val localFileDir = File(gpath + File.separator + spath)
+    if(!localFileDir.exists()){
+        localFileDir.mkdir()
     }
+
     val fileName = tempName + "_IMG_$timeStamp.jpg"
-    val fileDir = File(dataDir.path + File.separator + fileName)
+    val fileDir = File(localFileDir.path + File.separator + fileName)
     try {
         val fileOutputStream = FileOutputStream(fileDir)
         fileOutputStream.write(bytes) // => For bytes
@@ -82,12 +87,15 @@ fun save(bytes: ByteArray, tempName: String) {
 
 fun save(activity: MainActivity, gyroData: String, accData: String, wideTimeStamp: String, normalTimeStamp: String){
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
-    if (!dataDir.exists()) {
-        dataDir.mkdir()
+    var gpath: String = Environment.getExternalStorageDirectory().absolutePath
+    var spath = "Download/DataCollection/scene$sceneCounter"
+    val localFileDir = File(gpath + File.separator + spath)
+    if(!localFileDir.exists()){
+        localFileDir.mkdir()
     }
+
     val fileName = "data" + timeStamp + ".csv"
-    val fileDir = File(dataDir.path + File.separator + fileName)
+    val fileDir = File(localFileDir.path + File.separator + fileName)
     activity.bufferedWriter = BufferedWriter(FileWriter(fileDir))
     activity.bufferedWriter!!.write(gyroData)
     activity.bufferedWriter!!.write(accData)

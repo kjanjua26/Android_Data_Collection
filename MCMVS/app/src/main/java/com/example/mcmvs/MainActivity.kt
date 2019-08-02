@@ -30,7 +30,13 @@ import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+
+/*
+    Some issues that need resolving.
+    1. Solve the buffer loading thing => it is causing the capture to slow down.
+ */
 
 class MainActivity : AppCompatActivity() {
 
@@ -61,12 +67,12 @@ class MainActivity : AppCompatActivity() {
         gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         accSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         sensorReader = SensorReader(this)
-        var runnerThread = Thread()
 
         val dataDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "DataCollection")
         if (!dataDir.exists()) {
             dataDir.mkdir()
         }
+        checkAndCreateDirectory()
         // check camera permissions.
         OpenCVLoader.initDebug()
         if (!OpenCVLoader.initDebug()) {
@@ -181,6 +187,32 @@ class MainActivity : AppCompatActivity() {
 
     private fun restartActivity(){
         startActivity(Intent(this@MainActivity, MainActivity::class.java))
+    }
+
+    @SuppressLint("NewApi")
+    fun checkAndCreateDirectory(){
+        var sceneCounterList: MutableList<Int> = mutableListOf<Int>()
+        var gpath: String = Environment.getExternalStorageDirectory().absolutePath
+        var spath = "Download/DataCollection"
+        val fileDir = File(gpath + File.separator + spath)
+
+        val files = fileDir.listFiles()
+        for (i in 0..files.size-1){
+            if (files[i].isDirectory){
+                var name = files[i].name
+                var localScene = name.takeLast(1).toInt()
+                sceneCounterList.add(localScene)
+            }
+            Logd("Directories: " + files[i].name)
+        }
+        sceneCounterList.sort()
+        if(!files.isEmpty()){
+            var localSceneCount = sceneCounterList.get(sceneCounterList.size - 1)
+            sceneCounter = localSceneCount + 1
+            Logd("Directories: " + sceneCounterList.get(sceneCounterList.size - 1))
+        }else{
+            sceneCounter = 0
+        }
     }
 
     fun makeVideoFootage(){
@@ -322,7 +354,7 @@ class MainActivity : AppCompatActivity() {
 
         val twoLens: TwoLensCoordinator = TwoLensCoordinator()
         val ORIENTATIONS = SparseIntArray()
-
+        var sceneCounter = 0
         //const val SAVE_FILE = "saved_photo.jpg"
 
         init {
