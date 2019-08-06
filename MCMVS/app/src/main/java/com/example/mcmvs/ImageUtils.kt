@@ -2,6 +2,7 @@ package com.example.mcmvs
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
@@ -14,13 +15,14 @@ import android.os.Environment
 import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
-import com.example.mcmvs.MainActivity.Companion.BLUR_SCALE_FACTOR
-import com.example.mcmvs.MainActivity.Companion.DISPLAY_BITMAP_SCALE
+//import com.example.mcmvs.MainActivity.Companion.BLUR_SCALE_FACTOR
+//import com.example.mcmvs.MainActivity.Companion.DISPLAY_BITMAP_SCALE
 import com.example.mcmvs.MainActivity.Companion.Logd
 import com.example.mcmvs.MainActivity.Companion.sceneCounter
 import com.example.mcmvs.MainActivity.Companion.twoLens
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.*
+import java.lang.IllegalStateException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -51,9 +53,16 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
                 //reader.discardFreeBuffers() // release all the free buffers to help with memory
                 //reader.close()
                 //setCapturedPhoto(activity, params.capturedPhoto, finalBitmap)
-
                 twoLens.normalImage?.close()
                 twoLens.wideImage?.close()
+
+                try {
+                    //twoLens.normalImage?.close()
+                   //twoLens.wideImage?.close()
+                    image.close()
+                }catch (e: IllegalStateException){
+                    e.printStackTrace()
+                }
             }
 
         }
@@ -63,7 +72,10 @@ class ImageAvailableListener(private val activity: MainActivity, internal var pa
 
 fun save(bytes: ByteArray, tempName: String) {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+    //val localTime = timeStamp.split('_')[1].takeLast(2)
+    //MainActivity.lastTime = localTime.toInt()
 
+    //Logd("Time: $localTime")
     var gpath: String = Environment.getExternalStorageDirectory().absolutePath
     var spath = "Download/DataCollection/scene$sceneCounter"
     val localFileDir = File(gpath + File.separator + spath)
@@ -83,6 +95,7 @@ fun save(bytes: ByteArray, tempName: String) {
     } catch (e: IOException) {
         e.printStackTrace()
     }
+
 }
 
 fun save(activity: MainActivity, gyroData: String, accData: String, wideTimeStamp: String, normalTimeStamp: String){
@@ -250,10 +263,10 @@ fun save(activity: MainActivity, gyroData: String, accData: String, wideTimeStam
     Logd("WriteFile: Completed.")
 }*/
 
-fun generateTimestamp(): String {
+/*fun generateTimestamp(): String {
     val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
     return sdf.format(Date())
-}
+}*/
 
 /*fun generateTimestamp2Sec(): String {
     val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)

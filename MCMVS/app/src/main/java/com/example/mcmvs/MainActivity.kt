@@ -35,7 +35,7 @@ import kotlin.collections.HashMap
 
 /*
     Some issues that need resolving.
-    1. Solve the buffer loading thing => it is causing the capture to slow down.
+    05/08/19 => 1. After about 3 mins of capture, the app freezes and there is no error on logcat.
  */
 
 class MainActivity : AppCompatActivity() {
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
                             if (it?.isOpen == true) {
                                 Logd("In onClick. Taking Dual Cam Photo on logical camera: " + dualCamLogicalId)
                                 takePicture(this@MainActivity, it)
-                                Toast.makeText(applicationContext, "Captured", Toast.LENGTH_LONG).show()
+                                Toast.makeText(applicationContext, "Captured", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener {
             prepareUIForCapture()
             if(isRunning){
-                myThread.interrupt()
+                //myThread.interrupt()
                 stopThread = true
                 restartActivity()
             }else{
@@ -200,8 +200,13 @@ class MainActivity : AppCompatActivity() {
         for (i in 0..files.size-1){
             if (files[i].isDirectory){
                 var name = files[i].name
-                var localScene = name.takeLast(1).toInt()
-                sceneCounterList.add(localScene)
+                if(name.length <= 6) {
+                    var localScene = name.takeLast(1).toInt()
+                    sceneCounterList.add(localScene)
+                }else{
+                    var localScene = name.takeLast(2).toInt()
+                    sceneCounterList.add(localScene)
+                }
             }
             Logd("Directories: " + files[i].name)
         }
@@ -215,9 +220,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun makeVideoFootage(){
+    /*fun makeVideoFootage(){
         // TODO: Add the on-the-fly ffmpeg part here.
-    }
+    }*/
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
@@ -263,10 +268,10 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    fun initializeSensors(){
+    /*fun initializeSensors(){
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         gyroSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-    }
+    }*/
 
     private fun startBackgroundThread(params: CameraParams) {
         if (params.backgroundThread == null) {
@@ -334,11 +339,11 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val NORMAL_FOCAL_LENGTH: Float = 50f
-        const val GAUSSIAN_BLUR_RADIUS: Float = 25f
-        const val BLUR_SCALE_FACTOR: Float = 0.25f
+        //const val GAUSSIAN_BLUR_RADIUS: Float = 25f
+        //const val BLUR_SCALE_FACTOR: Float = 0.25f
         const val NO_APERTURE: Float = 0f
         const val FIXED_FOCUS_DISTANCE: Float = 0f
-        const val DISPLAY_BITMAP_SCALE: Float = 0.20f
+        //const val DISPLAY_BITMAP_SCALE: Float = 0.20f
         val INVALID_FOCAL_LENGTH: Float = Float.MAX_VALUE
         var NUM_CAMERAS = 0
         var dualCamLogicalId = ""
@@ -355,6 +360,7 @@ class MainActivity : AppCompatActivity() {
         val twoLens: TwoLensCoordinator = TwoLensCoordinator()
         val ORIENTATIONS = SparseIntArray()
         var sceneCounter = 0
+        //var lastTime = 0
         //const val SAVE_FILE = "saved_photo.jpg"
 
         init {

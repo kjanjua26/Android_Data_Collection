@@ -81,8 +81,8 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     //save(tempWideBitmap, "NormalShot")
     //save(tempNormalBitmap, "WideShot")
     //Logd("Translation Pose: " +)
-    Logd("Pose Rot Normal: " + Arrays.toString(twoLens.normalParams.poseRotation))
-    Logd("Pose Rot Wide: " + Arrays.toString(twoLens.wideParams.poseRotation))
+    //Logd("Pose Rot Normal: " + Arrays.toString(twoLens.normalParams.poseRotation))
+    //Logd("Pose Rot Wide: " + Arrays.toString(twoLens.wideParams.poseRotation))
 
     save(wideBytes, "NormalShot")
     save(normalBytes, "WideShot")
@@ -829,7 +829,7 @@ fun DoBokeh(activity: MainActivity, twoLens: TwoLensCoordinator) {
     return cameraDistortion
 }*/
 
-fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
+/*fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
     mat.put(0,0, *vals)
 /*
     for (row in 0..rows-1) {
@@ -844,7 +844,7 @@ fun setMat(mat: Mat, rows: Int, cols: Int, vals: DoubleArray) {
         }
     }
 */
-}
+}*/
 
 /*fun printArray(doubleArray: DoubleArray) {
     Logd("Checking double array Start")

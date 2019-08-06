@@ -296,7 +296,7 @@ fun setupImageReader(activity: MainActivity, params: CameraParams) {
     with (params) {
         params.imageReader?.close()
         imageReader = ImageReader.newInstance(960, 720,
-            ImageFormat.JPEG, /*maxImages*/2)
+            ImageFormat.JPEG, /*maxImages*/30)
         imageReader?.setOnImageAvailableListener(
             imageAvailableListener, backgroundHandler)
     }

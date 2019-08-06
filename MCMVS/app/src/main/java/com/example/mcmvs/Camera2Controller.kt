@@ -197,7 +197,7 @@ fun closeCamera(params: CameraParams?, activity: MainActivity) {
     params.device?.close()
 }
 
-
+//fun captureIt()
 
 fun takePicture(activity: MainActivity, params: CameraParams) {
     Logd("TakePicture: capture start.")
